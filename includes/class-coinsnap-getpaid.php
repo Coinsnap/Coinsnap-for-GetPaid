@@ -4,23 +4,22 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('COINSNAP_REFERRAL_CODE', 'D15432');
+define('COINSNAP_GETPAID_REFERRAL_CODE', 'D15432');
 
 require_once(dirname(__FILE__) . "/library/autoload.php");
 
 class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway
 {
-    public const WEBHOOK_EVENTS = ['New','Expired','Settled','Processing'];
+    public const WEBHOOK_EVENTS = ['New', 'Expired', 'Settled', 'Processing'];
 
     public function __construct()
     {
         $this->id = 'coinsnap';
         $this->title = __('Bitcoin + Lightning', 'getpaid-coinsnap');
         $this->method_title = __('Coinsnap', 'getpaid-coinsnap');
-        $this->supports     = array( 'subscription',  'addons' );
-        add_action('init', array( $this, 'process_webhook'));
+        $this->supports     = array('subscription',  'addons');
+        add_action('init', array($this, 'process_webhook'));
         parent::__construct();
-
     }
 
     public function admin_settings($admin_settings)
@@ -67,7 +66,6 @@ class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway
         );
 
         return $admin_settings;
-
     }
 
 
@@ -77,7 +75,7 @@ class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway
     public function process_webhook()
     {
 
-        if (! isset($_GET['getpaid-listener']) || $_GET['getpaid-listener'] !== 'coinsnap') {
+        if (!isset($_GET['getpaid-listener']) || $_GET['getpaid-listener'] !== 'coinsnap') {
             return;
         }
 
@@ -91,10 +89,8 @@ class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway
         try {
             $client = new \Coinsnap\Client\Invoice($this->getApiUrl(), $this->getApiKey());
             $csinvoice = $client->getInvoice($this->getStoreId(), $invoice_id);
-            $status = $csinvoice->getData()['status'] ;
-            $order_id = $csinvoice->getData()['orderId'] ;
-
-
+            $status = $csinvoice->getData()['status'];
+            $order_id = $csinvoice->getData()['orderId'];
         } catch (\Throwable $e) {
 
             echo "Error";
@@ -116,14 +112,13 @@ class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway
             $invoice = wpinv_get_invoice($order_id);
             if ($invoice && $this->id == $invoice->get_gateway()) {
                 $invoice->set_status($order_status);
-                $invoice->add_note(__('Payment transaction - '.$status, 'invoicing'), false, false, true);
+                $invoice->add_note(__('Payment transaction - ' . $status, 'invoicing'), false, false, true);
                 $invoice->save();
             }
         }
 
         echo "OK";
         exit;
-
     }
 
 
@@ -134,8 +129,8 @@ class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway
 
         $webhook_url = $this->get_webhook_url();
 
-        if (! $this->webhookExists($this->getStoreId(), $this->getApiKey(), $webhook_url)) {
-            if (! $this->registerWebhook($this->getStoreId(), $this->getApiKey(), $webhook_url)) {
+        if (!$this->webhookExists($this->getStoreId(), $this->getApiKey(), $webhook_url)) {
+            if (!$this->registerWebhook($this->getStoreId(), $this->getApiKey(), $webhook_url)) {
                 echo "unable to set Webhook url";
                 exit;
             }
@@ -147,7 +142,7 @@ class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway
 
         $amount = round($amount, 2);
         $buyerEmail = $invoice->get_email();
-        $buyerName = $invoice->get_first_name() . ' ' .$invoice->get_last_name();
+        $buyerName = $invoice->get_first_name() . ' ' . $invoice->get_last_name();
 
 
         $metadata = [];
@@ -168,23 +163,22 @@ class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway
             $buyerEmail,
             $buyerName,
             $redirectUrl,
-            COINSNAP_REFERRAL_CODE,
+            COINSNAP_GETPAID_REFERRAL_CODE,
             $metadata,
             $checkoutOptions
         );
 
 
-        $payurl = $csinvoice->getData()['checkoutLink'] ;
+        $payurl = $csinvoice->getData()['checkoutLink'];
         wp_redirect($payurl);
         exit;
-
     }
 
 
 
     public function get_webhook_url()
     {
-        return esc_url_raw(add_query_arg(array( 'getpaid-listener' => 'coinsnap' ), home_url('index.php')));
+        return esc_url_raw(add_query_arg(array('getpaid-listener' => 'coinsnap'), home_url('index.php')));
     }
     public function getApiKey()
     {
@@ -254,9 +248,6 @@ class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway
             return false;
         }
     }
-
-
-
 }
 
 add_filter('getpaid_default_gateways', 'register_GetPaid_coinsnap');
