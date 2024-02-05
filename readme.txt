@@ -34,3 +34,5 @@ So if you want to accept Bitcoin and Lightning payments in Gravity Forms, Affili
 
 = 1.0.0 =
   - Initial release.  
+
+  == Screenshot ==

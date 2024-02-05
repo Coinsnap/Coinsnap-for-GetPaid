@@ -150,8 +150,6 @@ class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway
         $metadata['customerName'] = $buyerName;
 
 
-        $checkoutOptions = new \Coinsnap\Client\InvoiceCheckoutOptions();
-        $checkoutOptions->setRedirectURL($redirectUrl);
         $client = new \Coinsnap\Client\Invoice($this->getApiUrl(), $this->getApiKey());
         $camount = \Coinsnap\Util\PreciseNumber::parseFloat($amount, 2);
 
@@ -164,8 +162,7 @@ class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway
             $buyerName,
             $redirectUrl,
             COINSNAP_GETPAID_REFERRAL_CODE,
-            $metadata,
-            $checkoutOptions
+            $metadata
         );
 
 
