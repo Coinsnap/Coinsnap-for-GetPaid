@@ -2,13 +2,13 @@
 
 /**
  * Plugin Name: 		Coinsnap for GetPaid
- * Plugin URI: 		https://coinsnap.io
+ * Plugin URI: 		    https://getpaid.coinsnap.org
  * Description: 		Provides a <a href="https://coinsnap.io">Coinsnap</a>  - Bitcoin + Lightning Payment Gateway for <a href="https://wpgetpaid.com/">GetPaid</a>.
  * Version: 			1.0.0
- * Author: 			Coinsnap
- * Author URI: 		https://coinsnap.io
- * License: GPL-2.0+
- * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+ * Author: 			    Coinsnap
+ * Author URI: 		    https://coinsnap.io
+ * License:             GPL-2.0+
+ * License URI:         http://www.gnu.org/licenses/gpl-2.0.txt
  */
 
 // Exit if accessed directly
