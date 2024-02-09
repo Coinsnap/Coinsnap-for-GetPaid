@@ -1,6 +1,5 @@
 === Coinsnap for GetPaid ===
 Contributors: coinsnap
-Donate link: https://getpaid.coinsnap.org/
 Tags:  Coinsnap, GetPaid, Bitcoin, Lightning 
 Requires at least: 6.4
 Requires PHP: 7.4
