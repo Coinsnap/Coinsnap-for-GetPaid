@@ -1,6 +1,7 @@
+# Coinsnap for GetPaid payment plugin #
 ![Image of Coinsnap for GetPaid](https://coinsnap.io/wp-content/uploads/2024/01/coinsnap-for-WPGetpaid.png)
+## Accept Bitcoin and Lightning Payments with GetPaid ##
 
-# Coinsnap for GetPaid
 You use Gravity Forms, AffiliateWP, Contact form 7, Ninja Forms or GeoDirectory and want to accept Bitcoin and Lightning payments there?
 
 Then install the GetPaid plugin and the Coinsnap for GetPaid plugin to give your customers the option of paying you with Bitcoin and Lightning.
