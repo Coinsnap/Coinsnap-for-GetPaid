@@ -111,11 +111,6 @@ The Bitcoin + Lightning payment page is now displayed, offering the payer the op
 Follow updates on plugin's GitHub page:
 https://github.com/Coinsnap/Coinsnap-for-GetPaid/
 
-== Upgrade Notice ==
-
-Follow updates on plugin's GitHub page:
-https://github.com/Coinsnap/Coinsnap-for-GetPaid/
-
 == Frequently Asked Questions ==
 
 Plugin's page on Coinsnap website: https://coinsnap.io/en/
