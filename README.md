@@ -53,7 +53,7 @@ All you need is an email address and a Lightning Wallet with a Lightning address
 
 In the Store Settings sub-item, we find the Store ID and API Key details. We need this information because both details must be stored with GetPaid.
 
-![Image of Coinsnap for GetPaid](https://coinsnap.io/wp-content/uploads/2024/02/Coinsnap-Store-Settings.jpg)
+![Image of Coinsnap for GetPaid](https://coinsnap.io/wp-content/uploads/2023/11/Screenshot-2024-05-27-at-08.16.52.png)
 
 Under Activate, we check the box to activate Coinsnap as a payment gateway.
 
