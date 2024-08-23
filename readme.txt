@@ -3,10 +3,12 @@ Contributors: coinsnap
 Tags:  Coinsnap, GetPaid, Bitcoin, Lightning 
 Requires at least: 6.4
 Requires PHP: 7.4
-Tested up to: 6.4.3
+Tested up to: 6.6.1
 Stable tag: 1.0.0
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
+
+You use Gravity Forms, AffiliateWP, Contact form 7, Ninja Forms or GeoDirectory and want to accept Bitcoin and Lightning payments there?
 
 == Description ==
 

@@ -1,15 +1,9 @@
 <?php
-
 if (!defined('ABSPATH')) {
     exit;
 }
 
-define('COINSNAP_GETPAID_REFERRAL_CODE', 'D15432');
-
-require_once(dirname(__FILE__) . "/library/autoload.php");
-
-class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway
-{
+class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway {
     public const WEBHOOK_EVENTS = ['New', 'Expired', 'Settled', 'Processing'];
 
     public function __construct()
@@ -75,7 +69,7 @@ class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway
     public function process_webhook()
     {
 
-        if (!isset($_GET['getpaid-listener']) || $_GET['getpaid-listener'] !== 'coinsnap') {
+        if (null === filter_input(INPUT_GET,'getpaid-listener') || filter_input(INPUT_GET,'getpaid-listener') !== 'coinsnap') {
             return;
         }
 
@@ -112,7 +106,7 @@ class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway
             $invoice = wpinv_get_invoice($order_id);
             if ($invoice && $this->id == $invoice->get_gateway()) {
                 $invoice->set_status($order_status);
-                $invoice->add_note(__('Payment transaction - ' . $status, 'invoicing'), false, false, true);
+                $invoice->add_note(esc_html('Payment transaction - ' . $status, 'invoicing'), false, false, true);
                 $invoice->save();
             }
         }
