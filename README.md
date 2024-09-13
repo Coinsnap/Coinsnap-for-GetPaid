@@ -31,7 +31,7 @@ Coinsnap’s payment plugin for GetPaid makes it amazingly simple for your custo
 
 GetPaid is a payment and invoicing plugin for WordPress. With GetPaid, website operators can sell individual products with a payment button or accept donations. GetPaid can also be implemented as an add-on in other applications (such as Gravity Forms, AffiliateWP, Contact form 7, Ninja Forms or GeoDirectory) for payment processing.
 
-GetPaid provides a large number of payment gateways to various payment service providers. Coinsnap payment plug-in is intended for GetPaid plugin to accept Bitcoin and Lightning payments via Coinsnap payment gateway https://app.coinsnap.io/. To do this, you need the free installed and configured GiveWP plugin (https://wordpress.org/plugins/invoicing/) on your WordPress site. Additionally the plugin Coinsnap for GetPaid.
+GetPaid provides a large number of payment gateways to various payment service providers. Coinsnap payment plug-in is intended for GetPaid plugin to accept Bitcoin and Lightning payments via Coinsnap payment gateway https://app.coinsnap.io/. To do this, you need the free installed and configured GetPaid plugin (https://wordpress.org/plugins/invoicing/) on your WordPress site. Additionally the plugin Coinsnap for GetPaid.
 
 ![GetPaid order form](https://github.com/Coinsnap/Coinsnap-for-GetPaid/blob/main/assets/images/7.png)
 
