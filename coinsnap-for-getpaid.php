@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Plugin Name:     Coinsnap for GetPaid
+ * Plugin Name:     Coinsnap Add-on for GetPaid
  * Description:     Provides a <a href="https://coinsnap.io">Coinsnap</a>  - Bitcoin + Lightning Payment Gateway for GetPaid.
  * Version:         1.0.0
  * Author:          Coinsnap
@@ -11,7 +11,7 @@
  * Requires PHP:    7.4
  * Tested up to:    6.6.2
  * Requires at least: 5.2
- * Getpaid tested up to: 2.8.12
+ * Getpaid tested up to: 2.8.16
  * License:         GPL2
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -34,6 +34,6 @@ require_once(dirname(__FILE__) . "/library/loader.php");
 function wpinv_coinsnap_init()
 {
     require_once(plugin_dir_path(__FILE__) . 'includes/class-coinsnap-getpaid.php');
-    new GetPaidGateway_coinsnap();
+    new CoinsnapGP_Gateway();
 }
 add_action('getpaid_init', 'wpinv_coinsnap_init');
