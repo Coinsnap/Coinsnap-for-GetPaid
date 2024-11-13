@@ -3,57 +3,115 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway {
+class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
     public const WEBHOOK_EVENTS = ['New', 'Expired', 'Settled', 'Processing'];
 
-    public function __construct()
-    {
+    public function __construct(){
         $this->id = 'coinsnap';
-        $this->title = __('Bitcoin + Lightning', 'getpaid-coinsnap');
-        $this->method_title = __('Coinsnap', 'getpaid-coinsnap');
-        $this->supports     = array('subscription',  'addons');
+        $this->title = __('Bitcoin + Lightning', 'coinsnap-for-getpaid');
+        $this->method_title = __('Coinsnap', 'coinsnap-for-getpaid');
+        $this->supports = array('subscription', 'addons');
         add_action('init', array($this, 'process_webhook'));
+        add_action('admin_notices', array($this, 'coinsnap_notice'));
         parent::__construct();
     }
+    
+    public function coinsnap_notice(){
+        
+        $page = (filter_input(INPUT_GET,'page',FILTER_SANITIZE_FULL_SPECIAL_CHARS ))? filter_input(INPUT_GET,'page',FILTER_SANITIZE_FULL_SPECIAL_CHARS ) : '';
+        $tab = (filter_input(INPUT_GET,'tab',FILTER_SANITIZE_FULL_SPECIAL_CHARS ))? filter_input(INPUT_GET,'tab',FILTER_SANITIZE_FULL_SPECIAL_CHARS ) : '';
+        
+        if($page === 'wpinv-settings' && $tab === 'gateways'){
+            $coinsnap_url = $this->getApiUrl();
+            $coinsnap_api_key = $this->getApiKey();
+            $coinsnap_store_id = $this->getStoreId();
+            $coinsnap_webhook_url = $this->get_webhook_url();
+                
+            if(!isset($coinsnap_store_id) || empty($coinsnap_store_id)){
+                    echo '<div class="notice notice-error"><p>';
+                    esc_html_e('Coinsnap Store ID is not set', 'coinsnap-for-getpaid');
+                    echo '</p></div>';
+            }
 
-    public function admin_settings($admin_settings)
-    {
+            if(!isset($coinsnap_api_key) || empty($coinsnap_api_key)){
+                    echo '<div class="notice notice-error"><p>';
+                    esc_html_e('Coinsnap API Key is not set', 'coinsnap-for-getpaid');
+                    echo '</p></div>';
+            }
+                
+            if(!empty($coinsnap_api_key) && !empty($coinsnap_store_id)){
+                $client = new \Coinsnap\Client\Store($coinsnap_url, $coinsnap_api_key);
+                $store = $client->getStore($coinsnap_store_id);
+                if ($store['code'] === 200){
+                        echo '<div class="notice notice-success"><p>';
+                        esc_html_e('Established connection to Coinsnap Server', 'coinsnap-for-getpaid');
+                        echo '</p></div>';
+                        
+                        if ( !$this->webhookExists( $coinsnap_store_id, $coinsnap_api_key, $coinsnap_webhook_url ) ) {
+                            if ( ! $this->registerWebhook( $coinsnap_store_id, $coinsnap_api_key, $coinsnap_webhook_url ) ) {
+                                echo '<div class="notice notice-error"><p>';
+                                esc_html_e('Unable to create webhook on Coinsnap Server', 'coinsnap-for-getpaid');
+                                echo '</p></div>';
+                            }
+                            else {
+                                echo '<div class="notice notice-success"><p>';
+                                esc_html_e('Successfully registered a new webhook on Coinsnap Server', 'coinsnap-for-getpaid');
+                                echo '</p></div>';
+                            }
+                        }
+                        else {
+                            echo '<div class="notice notice-info"><p>';
+                            esc_html_e('Webhook already exists, skipping webhook creation', 'coinsnap-for-getpaid');
+                            echo '</p></div>';
+                        }
+                }
+                else {
+                        echo '<div class="notice notice-error"><p>';
+                        esc_html_e('Coinsnap connection error:', 'coinsnap-for-getpaid');
+                        echo esc_html($store['result']['message']);
+                        echo '</p></div>';
+                }
+            }
+        }
+    }
+
+    public function admin_settings($admin_settings){
 
         $statuses = wpinv_get_invoice_statuses(true, true, $this);
-        $admin_settings['coinsnap_desc']['std']  = __('Pay using Bitcoin + Lightning', 'getpaid-coinsnap');
+        $admin_settings['coinsnap_desc']['std']  = __('Pay using Bitcoin + Lightning', 'coinsnap-for-getpaid');
 
         $admin_settings['coinsnap_store_id'] = array(
             'id'   => 'coinsnap_store_id',
-            'name' => __('Store ID', 'getpaid-coinsnap'),
-            'desc' => __('Enter Store ID', 'getpaid-coinsnap'),
+            'name' => __('Store ID', 'coinsnap-for-getpaid'),
+            'desc' => __('Enter Store ID', 'coinsnap-for-getpaid'),
             'type' => 'text',
         );
         $admin_settings['coinsnap_api_key'] = array(
             'id'   => 'coinsnap_api_key',
-            'name' => __('API Key', 'getpaid-coinsnap'),
-            'desc' => __('Enter API Key', 'getpaid-coinsnap'),
+            'name' => __('API Key', 'coinsnap-for-getpaid'),
+            'desc' => __('Enter API Key', 'coinsnap-for-getpaid'),
             'type' => 'text',
         );
         $admin_settings['coinsnap_expired_status'] = array(
             'id'   => 'coinsnap_expired_status',
-            'name' => __('Expired Status', 'getpaid-coinsnap'),
-            'desc' => __('Select Expired Status', 'getpaid-coinsnap'),
+            'name' => __('Expired Status', 'coinsnap-for-getpaid'),
+            'desc' => __('Select Expired Status', 'coinsnap-for-getpaid'),
             'type'        => 'select',
             'std'         => 'wpi-cancelled',
             'options'     => $statuses,
         );
         $admin_settings['coinsnap_settled_status'] = array(
             'id'   => 'coinsnap_settled_status',
-            'name' => __('Settled Status', 'getpaid-coinsnap'),
-            'desc' => __('Select Settled Status', 'getpaid-coinsnap'),
+            'name' => __('Settled Status', 'coinsnap-for-getpaid'),
+            'desc' => __('Select Settled Status', 'coinsnap-for-getpaid'),
             'type'        => 'select',
             'std'         => 'publish',
             'options'     => $statuses,
         );
         $admin_settings['coinsnap_processing_status'] = array(
             'id'   => 'coinsnap_processing_status',
-            'name' => __('Processing Status', 'getpaid-coinsnap'),
-            'desc' => __('Select Processing Status', 'getpaid-coinsnap'),
+            'name' => __('Processing Status', 'coinsnap-for-getpaid'),
+            'desc' => __('Select Processing Status', 'coinsnap-for-getpaid'),
             'type'        => 'select',
             'std'         => 'wpi-processing',
             'options'     => $statuses,
@@ -62,14 +120,9 @@ class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway {
         return $admin_settings;
     }
 
+    public function process_webhook(){
 
-
-
-
-    public function process_webhook()
-    {
-
-        if (null === filter_input(INPUT_GET,'getpaid-listener') || filter_input(INPUT_GET,'getpaid-listener') !== 'coinsnap') {
+        if (null === filter_input(INPUT_GET,'getpaid-listener',FILTER_SANITIZE_FULL_SPECIAL_CHARS) || filter_input(INPUT_GET,'getpaid-listener',FILTER_SANITIZE_FULL_SPECIAL_CHARS) !== 'coinsnap') {
             return;
         }
 
@@ -77,8 +130,6 @@ class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway {
 
         $notify_ar = json_decode($notify_json, true);
         $invoice_id = $notify_ar['invoiceId'];
-
-
 
         try {
             $client = new \Coinsnap\Client\Invoice($this->getApiUrl(), $this->getApiKey());
@@ -244,6 +295,6 @@ class GetPaidGateway_coinsnap extends GetPaid_Payment_Gateway {
 add_filter('getpaid_default_gateways', 'register_GetPaid_coinsnap');
 function register_my_custom_gateway($gateways)
 {
-    $gateways['coinsnap'] = 'GetPaidGateway_coinsnap';
+    $gateways['coinsnap'] = 'CoinsnapGP_Gateway';
     return $gateways;
 }
