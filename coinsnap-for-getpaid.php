@@ -11,7 +11,7 @@
  * Requires PHP:    7.4
  * Tested up to:    6.7.1
  * Requires at least: 6.0
- * Getpaid tested up to: 2.8.18
+ * Getpaid tested up to: 2.8.20
  * License:         GPL2
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -19,7 +19,7 @@
  */
 
 if (!defined( 'ABSPATH' )){ exit;}
-define( 'COINSNAP_PHP_VERSION', '7.4' );
+define( 'COINSNAP_GETPAID_PHP_VERSION', '7.4' );
 define( 'COINSNAP_GETPAID_VERSION', '1.0.0' );
 define( 'COINSNAP_GETPAID_REFERRAL_CODE', 'D15432');
 define( 'COINSNAP_PLUGIN_ID', 'coinsnap-for-getpaid' );
