@@ -1,11 +1,11 @@
-# Coinsnap for GetPaid payment plugin #
-![Coinsnap for GetPaid](https://github.com/Coinsnap/Coinsnap-for-GetPaid/blob/main/assets/images/1.png)
+0# Coinsnap for GetPaid payment plugin #
+![Coinsnap for GetPaid](https://resources.coinsnap.org/products/getpaid/images/1.png)
 
 Contributors: coinsnap
 Tags:  Lightning, Lightning Payment, SATS, Satoshi sats, bitcoin, Wordpress, Getpaid, Invoicing, Payment button, paywall, payment gateway, accept bitcoin, bitcoin plugin, bitcoin payment processor, bitcoin e-commerce, Lightning Network, cryptocurrency, lightning payment processor
 Requires at least: 6.4
 Requires PHP: 7.4
-Tested up to: 6.6.2
+Tested up to: 6.7.1
 Stable tag: 1.0.0
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -27,13 +27,13 @@ Coinsnap’s payment plugin for GetPaid makes it amazingly simple for your custo
 
 # Bitcoin and Lightning payments in GetPaid with Coinsnap #
 
-![GetPaid Plugin for Wordpress](https://github.com/Coinsnap/Coinsnap-for-GetPaid/blob/main/assets/images/2.png)
+![GetPaid Plugin for Wordpress](https://resources.coinsnap.org/products/getpaid/images/2.png)
 
 GetPaid is a payment and invoicing plugin for WordPress. With GetPaid, website operators can sell individual products with a payment button or accept donations. GetPaid can also be implemented as an add-on in other applications (such as Gravity Forms, AffiliateWP, Contact form 7, Ninja Forms or GeoDirectory) for payment processing.
 
 GetPaid provides a large number of payment gateways to various payment service providers. Coinsnap payment plug-in is intended for GetPaid plugin to accept Bitcoin and Lightning payments via Coinsnap payment gateway https://app.coinsnap.io/. To do this, you need the free installed and configured GetPaid plugin (https://wordpress.org/plugins/invoicing/) on your WordPress site. Additionally the plugin Coinsnap for GetPaid.
 
-![GetPaid order form](https://github.com/Coinsnap/Coinsnap-for-GetPaid/blob/main/assets/images/7.png)
+![GetPaid order form](https://resources.coinsnap.org/products/getpaid/images/7.png)
 
 
 # Features: #
@@ -99,7 +99,7 @@ After successful installation, click Activate and then you can start setting up 
 
 ### 1.1. Add plugin ###
 
-![Plugin downloading from Github repository](https://github.com/Coinsnap/Coinsnap-for-GetPaid/blob/main/assets/images/3.jpg)
+![Plugin downloading from Github repository](https://resources.coinsnap.org/products/getpaid/images/3.jpg)
 
 If you don’t want to install add-on directly via plugin, you can download Coinsnap GetPaid plug-in from Coinsnap Github page or from WordPress directory and install it via “Upload Plugin” function:
 
@@ -107,7 +107,7 @@ Navigate to Plugins > Add Plugins > Upload Plugin and Select zip-archive downloa
 
 Click “Install now” and Coinsnap GetPaid plug-in will be installed in WordPress.
 
-![Plugin downloading from Github repository](https://github.com/Coinsnap/Coinsnap-for-GetPaid/blob/main/assets/images/4.png)
+![Plugin downloading from Github repository](https://resources.coinsnap.org/products/getpaid/images/4.png)
 
 After you have successfully installed the plugin, you can proceed with the connection to Coinsnap payment gateway.
 
@@ -115,7 +115,7 @@ After you have successfully installed the plugin, you can proceed with the conne
 
 After the Coinsnap GetPaid plug-in is installed and activated, a notice appears that the plugin still needs to be configured.
 
-![Coinsnap payment gateway settings](https://github.com/Coinsnap/Coinsnap-for-GetPaid/blob/main/assets/images/5.png)
+![Coinsnap payment gateway settings](https://resources.coinsnap.org/products/getpaid/images/5.png)
 
 ### 1.3. Deposit Coinsnap data ###
 
@@ -123,14 +123,14 @@ After the Coinsnap GetPaid plug-in is installed and activated, a notice appears 
 * Enter Store ID and API Key
 * Click Save Setting
 
-![Payment gateways list](https://github.com/Coinsnap/Coinsnap-for-GetPaid/blob/main/assets/images/6.png)
+![Payment gateways list](https://resources.coinsnap.org/products/getpaid/images/6.png)
 
 
 If you don’t have a Coinsnap account yet, you can do so via the link shown: Coinsnap Registration
 
 ### 2. Create Coinsnap account ####
 
-![Coinsnap register](https://github.com/Coinsnap/Coinsnap-for-GetPaid/blob/main/assets/images/8.png)
+![Coinsnap register](https://resources.coinsnap.org/products/getpaid/images/8.png)
 
 ### 2.1. Create a Coinsnap Account ####
 
@@ -142,7 +142,7 @@ If you are using a Lightning Wallet with Lightning Login, then you can also open
 
 You will receive an email to the given email address with a confirmation link, which you have to confirm. If you do not find the email, please check your spam folder.
 
-![E-mail address confirmation](https://github.com/Coinsnap/Coinsnap-for-GetPaid/blob/main/assets/images/9.png)
+![E-mail address confirmation](https://resources.coinsnap.org/products/getpaid/images/9.png)
 
 Then please log in to the Coinsnap backend with the appropriate credentials.
 
@@ -163,7 +163,7 @@ https://coinsnap.io/lightning-wallet-mit-lightning-adresse/
 
 ### 3.1. GetPaid Coinsnap Settings ###
 
-![Connect website with Coinsnap](https://github.com/Coinsnap/Coinsnap-for-GetPaid/blob/main/assets/images/10.png)
+![Connect website with Coinsnap](https://resources.coinsnap.org/products/getpaid/images/10.png)
 
 * Navigate to GetPaid > Settings > Payment Gateways and select coinsnap
 * Enter Store ID and API Key
@@ -181,5 +181,5 @@ We make a real donation payment in our test GetPaid site.
 
 The Bitcoin + Lightning payment page is now displayed, offering the payer the option to pay with Bitcoin or also with Lightning. Both methods are integrated in the displayed QR code.
 
-![QR code on the Bitcoin payment page](https://github.com/Coinsnap/Coinsnap-for-GetPaid/blob/main/assets/images/11.png)
+![QR code on the Bitcoin payment page](https://resources.coinsnap.org/products/getpaid/images/11.png)
 
