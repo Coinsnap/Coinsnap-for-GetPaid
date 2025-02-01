@@ -9,9 +9,9 @@
  * Text Domain:     coinsnap-for-getpaid
  * Domain Path:     /languages
  * Requires PHP:    7.4
- * Tested up to:    6.7.1
+ * Tested up to:    6.7
  * Requires at least: 6.0
- * Getpaid tested up to: 2.8.22
+ * Getpaid tested up to: 2.8.23
  * License:         GPL2
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
  *
