@@ -29,13 +29,13 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
                 
             if(!isset($coinsnap_store_id) || empty($coinsnap_store_id)){
                     echo '<div class="notice notice-error"><p>';
-                    esc_html_e('Coinsnap Store ID is not set', 'coinsnap-for-getpaid');
+                    esc_html_e('GetPaid: Coinsnap Store ID is not set', 'coinsnap-for-getpaid');
                     echo '</p></div>';
             }
 
             if(!isset($coinsnap_api_key) || empty($coinsnap_api_key)){
                     echo '<div class="notice notice-error"><p>';
-                    esc_html_e('Coinsnap API Key is not set', 'coinsnap-for-getpaid');
+                    esc_html_e('GetPaid: Coinsnap API Key is not set', 'coinsnap-for-getpaid');
                     echo '</p></div>';
             }
                 
@@ -44,30 +44,30 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
                 $store = $client->getStore($coinsnap_store_id);
                 if ($store['code'] === 200){
                         echo '<div class="notice notice-success"><p>';
-                        esc_html_e('Established connection to Coinsnap Server', 'coinsnap-for-getpaid');
+                        esc_html_e('GetPaid: Established connection to Coinsnap Server', 'coinsnap-for-getpaid');
                         echo '</p></div>';
                         
                         if ( !$this->webhookExists( $coinsnap_store_id, $coinsnap_api_key, $coinsnap_webhook_url ) ) {
                             if ( ! $this->registerWebhook( $coinsnap_store_id, $coinsnap_api_key, $coinsnap_webhook_url ) ) {
                                 echo '<div class="notice notice-error"><p>';
-                                esc_html_e('Unable to create webhook on Coinsnap Server', 'coinsnap-for-getpaid');
+                                esc_html_e('GetPaid: Unable to create webhook on Coinsnap Server', 'coinsnap-for-getpaid');
                                 echo '</p></div>';
                             }
                             else {
                                 echo '<div class="notice notice-success"><p>';
-                                esc_html_e('Successfully registered a new webhook on Coinsnap Server', 'coinsnap-for-getpaid');
+                                esc_html_e('GetPaid: Successfully registered a new webhook on Coinsnap Server', 'coinsnap-for-getpaid');
                                 echo '</p></div>';
                             }
                         }
                         else {
                             echo '<div class="notice notice-info"><p>';
-                            esc_html_e('Webhook already exists, skipping webhook creation', 'coinsnap-for-getpaid');
+                            esc_html_e('GetPaid: Webhook already exists, skipping webhook creation', 'coinsnap-for-getpaid');
                             echo '</p></div>';
                         }
                 }
                 else {
                         echo '<div class="notice notice-error"><p>';
-                        esc_html_e('Coinsnap connection error:', 'coinsnap-for-getpaid');
+                        esc_html_e('GetPaid: Coinsnap connection error:', 'coinsnap-for-getpaid');
                         echo esc_html($store['result']['message']);
                         echo '</p></div>';
                 }
