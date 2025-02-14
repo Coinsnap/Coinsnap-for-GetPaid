@@ -12,10 +12,10 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Bitcoin and Lightning payment processing with the Coinsnap add-on for payment & invoicing plugin GetPaid for Wordpress.
 
-* Coinsnap for GetPaid Payment & Invoicing Demo Page: https://getpaid.coinsnap.org/
-* Blog Article: https://coinsnap.io/en/coinsnap-for-getpaid/
-* WordPress: https://wordpress.org/plugins/coinsnap-for-getpaid/
-* GitHub: https://github.com/Coinsnap/Coinsnap-for-GetPaid
+* Coinsnap for GetPaid Payment & Invoicing Demo Page: [https://getpaid.coinsnap.org/](https://getpaid.coinsnap.org/)
+* Blog Article: [https://coinsnap.io/coinsnap-for-getpaid/](https://coinsnap.io/coinsnap-for-getpaid/)
+* WordPress: [https://wordpress.org/plugins/coinsnap-for-getpaid/](https://wordpress.org/plugins/coinsnap-for-getpaid/)
+* GitHub: [https://github.com/Coinsnap/Coinsnap-for-GetPaid](https://github.com/Coinsnap/Coinsnap-for-GetPaid)
 
 # Description #
 
