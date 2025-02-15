@@ -1,8 +1,8 @@
 <?php
 
 /**
- * Plugin Name:     Coinsnap Add-on for GetPaid
- * Description:     Provides a <a href="https://coinsnap.io">Coinsnap</a>  - Bitcoin + Lightning Payment Gateway for GetPaid.
+ * Plugin Name:     Bitcoin Donation for Getpaid
+ * Description:     Accept Bitcoin payments with Getpaid. All Bitcoin payments are transferred directly from your customer’s wallet into your Lightning wallet.
  * Version:         1.0.0
  * Author:          Coinsnap
  * Author URI:      https://coinsnap.io

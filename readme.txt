@@ -1,4 +1,4 @@
-=== Coinsnap Add-on for GetPaid ===
+=== Bitcoin Donation for Getpaid ===
 Contributors: coinsnap
 Tags:  Coinsnap, GetPaid, Bitcoin, Lightning, Invoicing 
 Tested up to: 6.7
@@ -6,7 +6,7 @@ Stable tag: 1.0.0
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Bitcoin and Lightning payment processing with the Coinsnap add-on for payment & invoicing plugin GetPaid for Wordpress.
+Accept Bitcoin payments with Getpaid. All Bitcoin payments are transferred directly from your customer’s wallet into your Lightning wallet.
 
 == Description ==
 

@@ -1,16 +1,16 @@
-0# Coinsnap for GetPaid payment plugin #
+# Bitcoin Donation for Getpaid #
 ![Coinsnap for GetPaid](https://resources.coinsnap.org/products/getpaid/images/1.png)
 
 Contributors: coinsnap
 Tags:  Lightning, Lightning Payment, SATS, Satoshi sats, bitcoin, Wordpress, Getpaid, Invoicing, Payment button, paywall, payment gateway, accept bitcoin, bitcoin plugin, bitcoin payment processor, bitcoin e-commerce, Lightning Network, cryptocurrency, lightning payment processor
 Requires at least: 6.4
 Requires PHP: 7.4
-Tested up to: 6.7.1
+Tested up to: 6.7
 Stable tag: 1.0.0
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Bitcoin and Lightning payment processing with the Coinsnap add-on for payment & invoicing plugin GetPaid for Wordpress.
+Accept Bitcoin payments with Getpaid. All Bitcoin payments are transferred directly from your customer’s wallet into your Lightning wallet.
 
 * Coinsnap for GetPaid Payment & Invoicing Demo Page: [https://getpaid.coinsnap.org/](https://getpaid.coinsnap.org/)
 * Blog Article: [https://coinsnap.io/coinsnap-for-getpaid/](https://coinsnap.io/coinsnap-for-getpaid/)
