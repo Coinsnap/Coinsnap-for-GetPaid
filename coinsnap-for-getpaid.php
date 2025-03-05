@@ -11,6 +11,7 @@
  * Requires PHP:    7.4
  * Tested up to:    6.7
  * Requires at least: 6.0
+ * Requires Plugins: invoicing
  * Getpaid tested up to: 2.8.23
  * License:         GPL2
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
@@ -37,3 +38,18 @@ function wpinv_coinsnap_init()
     new CoinsnapGP_Gateway();
 }
 add_action('getpaid_init', 'wpinv_coinsnap_init');
+add_action('admin_init', 'check_getpaid_dependency');
+
+function check_getpaid_dependency(){
+    if (!is_plugin_active('invoicing/invoicing.php')) {
+        add_action('admin_notices', 'getpaid_dependency_notice');
+        deactivate_plugins(plugin_basename(__FILE__));
+    }
+}
+
+function getpaid_dependency_notice(){?>
+    <div class="notice notice-error">
+        <p><?php echo esc_html_e('Bitcoin Donation for Getpaid plugin requires GetPaid to be installed and activated.','coinsnap-for-getpaid'); ?></p>
+    </div>
+    <?php
+}
