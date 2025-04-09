@@ -20,15 +20,14 @@
  */
 
 if (!defined( 'ABSPATH' )){ exit;}
-define( 'COINSNAP_GETPAID_PHP_VERSION', '7.4' );
-define( 'COINSNAP_GETPAID_VERSION', '1.0.0' );
-define( 'COINSNAP_GETPAID_REFERRAL_CODE', 'D15432');
-define( 'COINSNAP_GETPAID_PLUGIN_ID', 'coinsnap-for-getpaid' );
-define( 'COINSNAP_PLUGIN_FILE_PATH', plugin_dir_path( __FILE__ ) );
-define( 'COINSNAP_PLUGIN_URL', plugin_dir_url(__FILE__ ) );
-define( 'COINSNAP_SERVER_URL', 'https://app.coinsnap.io' );
-define( 'COINSNAP_API_PATH', '/api/v1/');
-define( 'COINSNAP_SERVER_PATH', 'stores' );
+if(!defined('COINSNAPGP_PHP_VERSION')){define( 'COINSNAPGP_PHP_VERSION', '7.4' );}
+if(!defined('COINSNAPGP_VERSION')){define( 'COINSNAPGP_VERSION', '1.0.0' );}
+if(!defined('COINSNAPGP_REFERRAL_CODE')){define( 'COINSNAPGP_REFERRAL_CODE', 'D15432');}
+if(!defined('COINSNAPGP_PLUGIN_ID')){define( 'COINSNAPGP_PLUGIN_ID', 'coinsnap-for-getpaid' );}
+if(!defined('COINSNAP_SERVER_URL')){define( 'COINSNAP_SERVER_URL', 'https://app.coinsnap.io' );}
+if(!defined('COINSNAP_API_PATH')){define( 'COINSNAP_API_PATH', '/api/v1/');}
+if(!defined('COINSNAP_SERVER_PATH')){define( 'COINSNAP_SERVER_PATH', 'stores' );}
+if(!defined('COINSNAP_CURRENCIES')){define( 'COINSNAP_CURRENCIES', array("EUR","USD","SATS","BTC","CAD","JPY","GBP","CHF","RUB") );}
 
 require_once(dirname(__FILE__) . "/library/loader.php");
 

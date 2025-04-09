@@ -92,6 +92,14 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
             'desc' => __('Enter API Key', 'coinsnap-for-getpaid'),
             'type' => 'text',
         );
+        $admin_settings['coinsnap_autoredirect'] = array(
+            'id'   => 'coinsnap_autoredirect',
+            'name' => __('Redirect after payment', 'coinsnap-for-getpaid'),
+            'desc' => __('Redirect after payment to Thank you page automatically', 'coinsnap-for-getpaid'),
+            'type' => 'checkbox',
+            'value'=> 1,
+            'std' => 1
+        );
         $admin_settings['coinsnap_expired_status'] = array(
             'id'   => 'coinsnap_expired_status',
             'name' => __('Expired Status', 'coinsnap-for-getpaid'),
@@ -166,53 +174,71 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
         exit;
     }
 
-
-
-
-    public function process_payment($invoice, $submission_data, $submission)
-    {
+    public function process_payment($invoice, $submission_data, $submission){
 
         $webhook_url = $this->get_webhook_url();
 
         if (!$this->webhookExists($this->getStoreId(), $this->getApiKey(), $webhook_url)) {
             if (!$this->registerWebhook($this->getStoreId(), $this->getApiKey(), $webhook_url)) {
-                echo "unable to set Webhook url";
-                exit;
+                wpinv_set_error( 'Connection error', esc_html__('Unable to set Webhook URL.', 'coinsnap-for-getpaid') );
+                wpinv_send_back_to_checkout( $invoice );
             }
         }
-
-        $amount =  $invoice->get_total();
-        $redirectUrl = esc_url_raw($this->get_return_url($invoice));
-
-
-        $amount = round($amount, 2);
-        $buyerEmail = $invoice->get_email();
-        $buyerName = $invoice->get_first_name() . ' ' . $invoice->get_last_name();
-
-
-        $metadata = [];
-        $metadata['orderNumber'] = $invoice->get_number();
-        $metadata['customerName'] = $buyerName;
-
-
+        
+        $amount =  round($invoice->get_total(), 2);
+        $currency = $invoice->get_currency();
         $client = new \Coinsnap\Client\Invoice($this->getApiUrl(), $this->getApiKey());
-        $camount = \Coinsnap\Util\PreciseNumber::parseFloat($amount, 2);
+        $checkInvoice = $client->checkPaymentData($amount,strtoupper( $currency ));
+                
+        if($checkInvoice['result'] === true){
 
-        $csinvoice = $client->createInvoice(
-            $this->getStoreId(),
-            $invoice->get_currency(),
-            $camount,
-            $invoice->get_number(),
-            $buyerEmail,
-            $buyerName,
-            $redirectUrl,
-            COINSNAP_GETPAID_REFERRAL_CODE,
-            $metadata
-        );
+            $redirectUrl = esc_url_raw($this->get_return_url($invoice));
 
 
-        $payurl = $csinvoice->getData()['checkoutLink'];
-        wp_redirect($payurl);
+            $buyerEmail = $invoice->get_email();
+            $buyerName = $invoice->get_first_name() . ' ' . $invoice->get_last_name();
+
+            $metadata = [];
+            $metadata['orderNumber'] = $invoice->get_number();
+            $metadata['customerName'] = $buyerName;
+
+            $redirectAutomatically = (wpinv_get_option( 'coinsnap_autoredirect') > 0)? true : false;
+            $walletMessage = '';
+
+            $camount = \Coinsnap\Util\PreciseNumber::parseFloat($amount, 2);
+
+            $csinvoice = $client->createInvoice(
+                $this->getStoreId(),
+                $currency,
+                $camount,
+                $invoice->get_number(),
+                $buyerEmail,
+                $buyerName,
+                $redirectUrl,
+                COINSNAPGP_REFERRAL_CODE,
+                $metadata,
+                $redirectAutomatically,
+                $walletMessage
+            );
+
+            $payurl = $csinvoice->getData()['checkoutLink'];
+            wp_redirect($payurl);
+        }
+        else {
+            
+            if($checkInvoice['error'] === 'currencyError'){
+                $errorMessage = sprintf( 
+                /* translators: 1: Currency */
+                __( 'Currency %1$s is not supported by Coinsnap', 'coinsnap-for-getpaid' ), strtoupper( $currency ));
+            }      
+            elseif($checkInvoice['error'] === 'amountError'){
+                $errorMessage = sprintf( 
+                /* translators: 1: Amount, 2: Currency */
+                __( 'Invoice amount cannot be less than %1$s %2$s', 'coinsnap-for-getpaid' ), $checkInvoice['min_value'], strtoupper( $currency ));
+            }
+            wpinv_set_error( 'Payment error', $errorMessage );
+            wpinv_send_back_to_checkout( $invoice );
+        }
         exit;
     }
 
