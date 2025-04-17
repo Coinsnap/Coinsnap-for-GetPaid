@@ -9,7 +9,7 @@
  * Text Domain:     coinsnap-for-getpaid
  * Domain Path:     /languages
  * Requires PHP:    7.4
- * Tested up to:    6.7
+ * Tested up to:    6.8
  * Requires at least: 6.0
  * Requires Plugins: invoicing
  * Getpaid tested up to: 2.8.24
