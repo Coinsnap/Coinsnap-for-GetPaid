@@ -24,6 +24,8 @@ if(!defined('COINSNAPGP_PHP_VERSION')){define( 'COINSNAPGP_PHP_VERSION', '7.4' )
 if(!defined('COINSNAPGP_VERSION')){define( 'COINSNAPGP_VERSION', '1.0.0' );}
 if(!defined('COINSNAPGP_REFERRAL_CODE')){define( 'COINSNAPGP_REFERRAL_CODE', 'D15432');}
 if(!defined('COINSNAPGP_PLUGIN_ID')){define( 'COINSNAPGP_PLUGIN_ID', 'coinsnap-for-getpaid' );}
+if(!defined('COINSNAPGP_PATH')){ define( 'COINSNAPGP_PATH', plugin_dir_path( __FILE__ ) ); }
+if(!defined('COINSNAPGP_URL')){ define( 'COINSNAPGP_URL', plugin_dir_url( __FILE__ ) ); }
 if(!defined('COINSNAP_SERVER_URL')){define( 'COINSNAP_SERVER_URL', 'https://app.coinsnap.io' );}
 if(!defined('COINSNAP_API_PATH')){define( 'COINSNAP_API_PATH', '/api/v1/');}
 if(!defined('COINSNAP_SERVER_PATH')){define( 'COINSNAP_SERVER_PATH', 'stores' );}
@@ -38,6 +40,24 @@ function wpinv_coinsnap_init()
 }
 add_action('getpaid_init', 'wpinv_coinsnap_init');
 add_action('admin_init', 'check_getpaid_dependency');
+add_action('init', function() {
+    
+    //  Session launcher
+    if ( ! session_id() ) {
+        session_start();
+    }
+    
+    // Setting up and handling custom endpoint for api key redirect from BTCPay Server.
+    add_rewrite_endpoint('btcpay-settings-callback', EP_ROOT);
+});
+
+// To be able to use the endpoint without appended url segments we need to do this.
+add_filter('request', function($vars) {
+    if (isset($vars['btcpay-settings-callback'])) {
+        $vars['btcpay-settings-callback'] = true;
+    }
+    return $vars;
+});
 
 function check_getpaid_dependency(){
     if (!is_plugin_active('invoicing/invoicing.php')) {
