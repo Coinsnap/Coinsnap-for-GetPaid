@@ -1,4 +1,4 @@
-=== Bitcoin Donation for Getpaid ===
+=== Bitcoin payments for Getpaid ===
 Contributors: coinsnap
 Tags:  Coinsnap, GetPaid, Bitcoin, Lightning, Invoicing 
 Tested up to: 6.8

@@ -16,7 +16,7 @@ jQuery(function ($) {
     
         let ajaxurl = coinsnapgp_ajax['ajax_url'];
         let data = {
-            action: 'coinsnap_connection_handler',
+            action: 'coinsnapgp_connection_handler',
             _wpnonce: coinsnapgp_ajax['nonce']
         };
 

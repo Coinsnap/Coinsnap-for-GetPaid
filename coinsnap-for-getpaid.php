@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Plugin Name:     Bitcoin Donation for Getpaid
+ * Plugin Name:     Bitcoin payments for Getpaid
  * Description:     Accept Bitcoin payments with Getpaid. All Bitcoin payments are transferred directly from your customer’s wallet into your Lightning wallet.
  * Version:         1.0.0
  * Author:          Coinsnap
@@ -41,20 +41,14 @@ function wpinv_coinsnap_init()
 add_action('getpaid_init', 'wpinv_coinsnap_init');
 add_action('admin_init', 'check_getpaid_dependency');
 add_action('init', function() {
-    
-    //  Session launcher
-    if ( ! session_id() ) {
-        session_start();
-    }
-    
     // Setting up and handling custom endpoint for api key redirect from BTCPay Server.
-    add_rewrite_endpoint('btcpay-settings-callback', EP_ROOT);
+    add_rewrite_endpoint('coinsnap-for-getpaid-btcpay-settings-callback', EP_ROOT);
 });
 
 // To be able to use the endpoint without appended url segments we need to do this.
 add_filter('request', function($vars) {
-    if (isset($vars['btcpay-settings-callback'])) {
-        $vars['btcpay-settings-callback'] = true;
+    if (isset($vars['coinsnap-for-getpaid-btcpay-settings-callback'])) {
+        $vars['coinsnap-for-getpaid-btcpay-settings-callback'] = true;
     }
     return $vars;
 });

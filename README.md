@@ -1,4 +1,4 @@
-# Bitcoin Donation for Getpaid #
+# Bitcoin payment for Getpaid #
 ![Coinsnap for GetPaid](https://resources.coinsnap.org/products/getpaid/images/1.png)
 
 Contributors: coinsnap
