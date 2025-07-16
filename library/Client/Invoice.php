@@ -8,8 +8,8 @@ if (!defined('ABSPATH')) {
 header('Access-Control-Allow-Origin: *');
 
 use Coinsnap\Result\InvoicePaymentMethod;
-use Coinsnap\Http\PreciseNumber;
-use Coinsnap\Util\WPRemoteClient;
+use Coinsnap\Http\WPRemoteClient;
+use Coinsnap\Util\PreciseNumber;
 
 class Invoice extends AbstractClient{
     
@@ -22,6 +22,11 @@ class Invoice extends AbstractClient{
         }
     }
     
+    /*  Invoice::loadExchangeRates() method loads exchange rates 
+     *  for fiat and crypto currencies from coingecko.com server in real time.
+     *  We don't send any data from the plugin or Wordpress database.
+     *  Method returns array with result code, exchange rates or error
+     */
     public function loadExchangeRates(): array {
         $url = 'https://api.coingecko.com/api/v3/exchange_rates';
         $headers = [];

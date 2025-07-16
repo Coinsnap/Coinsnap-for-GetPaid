@@ -33,13 +33,13 @@ if(!defined('COINSNAP_CURRENCIES')){define( 'COINSNAP_CURRENCIES', array("EUR","
 
 require_once(dirname(__FILE__) . "/library/loader.php");
 
-function wpinv_coinsnap_init()
+function coinsnapgp_init()
 {
     require_once(plugin_dir_path(__FILE__) . 'includes/class-coinsnap-getpaid.php');
     new CoinsnapGP_Gateway();
 }
-add_action('getpaid_init', 'wpinv_coinsnap_init');
-add_action('admin_init', 'check_getpaid_dependency');
+add_action('getpaid_init', 'coinsnapgp_init');
+add_action('admin_init', 'coinsnapgp_dependency_check');
 add_action('init', function() {
     // Setting up and handling custom endpoint for api key redirect from BTCPay Server.
     add_rewrite_endpoint('coinsnap-for-getpaid-btcpay-settings-callback', EP_ROOT);
@@ -49,18 +49,19 @@ add_action('init', function() {
 add_filter('request', function($vars) {
     if (isset($vars['coinsnap-for-getpaid-btcpay-settings-callback'])) {
         $vars['coinsnap-for-getpaid-btcpay-settings-callback'] = true;
+        $vars['coinsnap-for-getpaid-btcpay-nonce'] = wp_create_nonce( 'coinsnapgp-btcpay-nonce' );
     }
     return $vars;
 });
 
-function check_getpaid_dependency(){
+function coinsnapgp_dependency_check(){
     if (!is_plugin_active('invoicing/invoicing.php')) {
-        add_action('admin_notices', 'getpaid_dependency_notice');
+        add_action('admin_notices', 'coinsnapgp_dependency_notice');
         deactivate_plugins(plugin_basename(__FILE__));
     }
 }
 
-function getpaid_dependency_notice(){?>
+function coinsnapgp_dependency_notice(){?>
     <div class="notice notice-error">
         <p><?php echo esc_html_e('Bitcoin Donation for Getpaid plugin requires GetPaid to be installed and activated.','coinsnap-for-getpaid'); ?></p>
     </div>

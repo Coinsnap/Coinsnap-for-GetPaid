@@ -30,11 +30,13 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
             if (!isset( $wp_query->query_vars['coinsnap-for-getpaid-btcpay-settings-callback'])) {
                 return;
             }
+            
+            if(!isset($wp_query->query_vars['coinsnap-for-getpaid-btcpay-nonce']) || !wp_verify_nonce($wp_query->query_vars['coinsnap-for-getpaid-btcpay-nonce'],'coinsnapgp-btcpay-nonce')){
+                return;
+            }
 
             $CoinsnapBTCPaySettingsUrl = admin_url('admin.php?page=wpinv-settings&tab=gateways&section=coinsnap');
             
-            $rawData = file_get_contents('php://input');
-
             $btcpay_server_url = wpinv_get_option( 'btcpay_server_url');
             $btcpay_api_key  = filter_input(INPUT_POST,'apiKey',FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
@@ -46,7 +48,7 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
             }
 
             // Data does get submitted with url-encoded payload, so parse $_POST here.
-            if (!empty($_POST) || wp_verify_nonce(filter_input(INPUT_POST,'wp_nonce',FILTER_SANITIZE_FULL_SPECIAL_CHARS),'-1')) {
+            if (!empty($_POST)) {
                 $data['apiKey'] = filter_input(INPUT_POST,'apiKey',FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?? null;
                 if(isset($_POST['permissions'])){
                     $permissions = array_map('sanitize_text_field', wp_unslash($_POST['permissions']));
@@ -456,7 +458,7 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
                 wp_die('No Coinsnap invoiceId provided', '', ['response' => 400]);
             }
             
-            $invoice_id = $postData->invoiceId;
+            $invoice_id = esc_html($postData->invoiceId);
             
             if(strpos($invoice_id,'test_') !== false){
                 wp_die('Successful webhook test', '', ['response' => 200]);
@@ -705,8 +707,8 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
     }
 }
 
-add_filter('getpaid_default_gateways', 'register_GetPaid_coinsnap');
-function register_my_custom_gateway($gateways)
+add_filter('getpaid_default_gateways', 'coinsnapgp_gateway_register');
+function coinsnapgp_gateway_register($gateways)
 {
     $gateways['coinsnap'] = 'CoinsnapGP_Gateway';
     return $gateways;
