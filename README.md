@@ -6,7 +6,7 @@ Tags:  Lightning, Lightning Payment, SATS, Satoshi sats, bitcoin, Wordpress, Get
 Requires at least: 6.4
 Requires PHP: 7.4
 Tested up to: 6.8
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -182,4 +182,16 @@ We make a real donation payment in our test GetPaid site.
 The Bitcoin + Lightning payment page is now displayed, offering the payer the option to pay with Bitcoin or also with Lightning. Both methods are integrated in the displayed QR code.
 
 ![QR code on the Bitcoin payment page](https://resources.coinsnap.org/products/getpaid/images/11.png)
+
+
+## Changelog
+
+#### 1.0.0 :: 2025-08-04 
+
+* Initial release published in Wordpress Plugin Directory. 
+
+#### 1.0.1 :: 2025-08-05
+
+* Updated Generate API Key button behavior.
+* Updated connection check errors handler.
 

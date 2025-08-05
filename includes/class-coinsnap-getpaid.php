@@ -284,8 +284,9 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
                 
             if(!empty($coinsnap_api_key) && !empty($coinsnap_store_id)){
                 $client = new \Coinsnap\Client\Store($coinsnap_url, $coinsnap_api_key);
-                $store = $client->getStore($coinsnap_store_id);
-                if ($store['code'] === 200){
+                try {
+                    $store = $client->getStore($coinsnap_store_id);
+                    if ($store['code'] === 200){
                         echo '<div class="notice notice-success"><p>';
                         esc_html_e('GetPaid: Established connection to Coinsnap Server', 'coinsnap-for-getpaid');
                         echo '</p></div>';
@@ -307,13 +308,20 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
                             esc_html_e('GetPaid: Webhook already exists, skipping webhook creation', 'coinsnap-for-getpaid');
                             echo '</p></div>';
                         }
+                    }
+                    else {
+                            echo '<div class="notice notice-error"><p>';
+                            esc_html_e('GetPaid: Coinsnap connection error:', 'coinsnap-for-getpaid');
+                            echo esc_html($store['result']['message']);
+                            echo '</p></div>';
+                    }
                 }
-                else {
-                        echo '<div class="notice notice-error"><p>';
-                        esc_html_e('GetPaid: Coinsnap connection error:', 'coinsnap-for-getpaid');
-                        echo esc_html($store['result']['message']);
-                        echo '</p></div>';
+                catch (\Exception $e) {
+                    echo '<div class="notice notice-error"><p>';
+                    esc_html_e('GetPaid: API connection is not established', 'coinsnap-for-getpaid');
+                    echo '</p></div>';
                 }
+                
             }
         }
     }
@@ -355,7 +363,7 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
                     'id' => 'btcpay_server_url',
                     'name'       => __( 'BTCPay server URL*', 'coinsnap-for-getpaid' ),
                     'type'        => 'text',
-                    'desc'        => __( '<a href="#" class="btcpay-apikey-link">Check connection</a>', 'coinsnap-for-getpaid' ).'<br/><br/><button class="button btcpay-apikey-link" id="btcpay_wizard_button" target="_blank">'. __('Generate API key','coinsnap-for-getpaid').'</button>',
+                    'desc'        => __( '<a href="#" class="btcpay-apikey-link">Check connection</a>', 'coinsnap-for-getpaid' ).'<br/><br/><button class="button btcpay-apikey-link" id="btcpay_wizard_button" type="button">'. __('Generate API key','coinsnap-for-getpaid').'</button>',
                     'std'     => '',
                 'size' => 'regular',
                     'class' => 'btcpay'

@@ -2,7 +2,7 @@
 Contributors: coinsnap
 Tags:  Coinsnap, GetPaid, Bitcoin, Lightning, Invoicing 
 Tested up to: 6.8
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -168,9 +168,28 @@ Plugin's page on Coinsnap website: https://coinsnap.io/en/
 
 == Screenshots ==
 
+1. Install the Bitcoin payments for Getpaid Plugin in WordPress
+2. Activate plugin!
+3. Go to the Payments Gateways tab in Getpaid settings and choose Coinsnap
+4. Now you need to fill necessary fields
+5. If you have chosen BTCPay server, you can get API Key and Store ID using Setup Wizard: choose your store
+6. Put label for your site
+7. Coinsnap plugin connected to Coinsnap payment gateway
+8. Coinsnap plugin connected to BTCPay server
+9. Coinsnap registration page
+10. E-mail confirmation
+11. You find API Key and Store ID in your Coinsnap backend for Coinsnap connection
+12. QR code on the Bitcoin payment page
+13. Invoice is paid  
 
-  
+
+
+
 == Changelog ==
 
-= 1.0.0 :: 2025-08-05 =
+= 1.0.0 :: 2025-08-04 =
 * Initial release published in Wordpress Plugin Directory. 
+
+= 1.0.1 :: 2025-08-05 =
+* Updated Generate API Key button behavior.
+* Updated connection check errors handler.
