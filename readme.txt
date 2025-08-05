@@ -166,20 +166,11 @@ https://github.com/Coinsnap/Coinsnap-for-GetPaid/
 
 Plugin's page on Coinsnap website: https://coinsnap.io/en/
 
-== Screenshot ==
+== Screenshots ==
 
-1. Coinsnap for GetPaid Add-on
-2. GetPaid Plugin for Wordpress
-3. Plugin downloading from Github repository
-4. Manual plugin installation
-5. Coinsnap payment gateway settings
-6. Payment gateways list
-7. GetPaid order form
-8. Coinsnap register
-9. E-mail address confirmation
-10. Connect website with Coinsnap
-11. QR code on the Bitcoin payment page
+
   
 == Changelog ==
-= 1.0 :: 2024-03-03 =
-* Initial release. 
+
+= 1.0.0 :: 2025-08-05 =
+* Initial release published in Wordpress Plugin Directory. 

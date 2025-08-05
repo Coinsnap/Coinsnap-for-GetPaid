@@ -12,7 +12,7 @@
  * Tested up to:    6.8
  * Requires at least: 6.0
  * Requires Plugins: invoicing
- * Getpaid tested up to: 2.8.25
+ * Getpaid tested up to: 2.8.29
  * License:         GPL2
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -33,8 +33,7 @@ if(!defined('COINSNAP_CURRENCIES')){define( 'COINSNAP_CURRENCIES', array("EUR","
 
 require_once(dirname(__FILE__) . "/library/loader.php");
 
-function coinsnapgp_init()
-{
+function coinsnapgp_init(){
     require_once(plugin_dir_path(__FILE__) . 'includes/class-coinsnap-getpaid.php');
     new CoinsnapGP_Gateway();
 }

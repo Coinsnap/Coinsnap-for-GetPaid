@@ -6,7 +6,8 @@ if (!defined('ABSPATH')) {
 use Coinsnap\Client\Webhook;
 
 class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
-    public const WEBHOOK_EVENTS = ['New', 'Expired', 'Settled', 'Processing'];
+    public const COINSNAP_WEBHOOK_EVENTS = ['New','Expired','Settled','Processing','Invalid'];
+    public const BTCPAY_WEBHOOK_EVENTS = ['InvoiceCreated','InvoiceExpired','InvoiceSettled','InvoiceProcessing','InvoiceInvalid'];
 
     public function __construct(){
         $this->id = 'coinsnap';
@@ -323,15 +324,15 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
         $admin_settings['coinsnap_desc']['std']  = __('Pay using Bitcoin + Lightning', 'coinsnap-for-getpaid');
         
         $admin_settings['coinsnap_provider'] = array(
-                    'id'   => 'coinsnap_provider',
-                    'name' => __( 'Payment provider', 'coinsnap-for-getpaid' ),
-                    'desc' => __( 'Select payment provider', 'coinsnap-for-getpaid' ),
-                    'type'        => 'select',
-                    'options'   => [
-                        'coinsnap'  => 'Coinsnap',
-                        'btcpay'    => 'BTCPay Server'
-                    ]
-         );
+            'id'   => 'coinsnap_provider',
+            'name' => __( 'Payment provider', 'coinsnap-for-getpaid' ),
+            'desc' => __( 'Select payment provider', 'coinsnap-for-getpaid' ),
+            'type'        => 'select',
+            'options'   => [
+                'coinsnap'  => 'Coinsnap',
+                'btcpay'    => 'BTCPay Server'
+            ]
+        );
 
         //  Coinsnap fields
         $admin_settings['coinsnap_store_id'] = array(
@@ -425,7 +426,7 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
             // First check if we have any input
             $rawPostData = file_get_contents("php://input");
             if (!$rawPostData) {
-                    wp_die('No raw post data received', '', ['response' => 400]);
+                wp_die('No raw post data received', '', ['response' => 400]);
             }
 
             // Get headers and check for signature
@@ -434,9 +435,9 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
             $_provider = ($this->get_payment_provider() === 'btcpay')? 'btcpay' : 'coinsnap';
                 
             foreach ($headers as $key => $value) {
-                if ((strtolower($key) === 'x-coinsnap-sig' && $_provider === 'coinsnap') || (strtolower($key) === 'btcpay-sig' && $_provider === 'btcpay')) {
-                        $signature = $value;
-                        $payloadKey = strtolower($key);
+                if (strtolower($key) === 'x-coinsnap-sig' || strtolower($key) === 'btcpay-sig') {
+                    $signature = $value;
+                    $payloadKey = strtolower($key);
                 }
             }
 
@@ -448,59 +449,65 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
             // Validate the signature
             $webhook = get_option( 'wpinv_settings_coinsnap_webhook');
             if (!Webhook::isIncomingWebhookRequestValid($rawPostData, $signature, $webhook['secret'])) {
-                wp_die('Invalid authentication signature', '', ['response' => 401]);
+                wp_die('Invalid authentication signature for '.esc_html($payloadKey), '', ['response' => 401]);
             }
+            
+            try {
 
-            // Parse the JSON payload
-            $postData = json_decode($rawPostData, false, 512, JSON_THROW_ON_ERROR);
+                // Parse the JSON payload
+                $postData = json_decode($rawPostData, false, 512, JSON_THROW_ON_ERROR);
 
-            if (!isset($postData->invoiceId)) {
-                wp_die('No Coinsnap invoiceId provided', '', ['response' => 400]);
-            }
-            
-            $invoice_id = esc_html($postData->invoiceId);
-            
-            if(strpos($invoice_id,'test_') !== false){
-                wp_die('Successful webhook test', '', ['response' => 200]);
-            }
-            
-            $client = new \Coinsnap\Client\Invoice($this->getApiUrl(), $this->getApiKey());
-            $csinvoice = $client->getInvoice($this->getStoreId(), $invoice_id);
-            $status = $csinvoice->getData()['status'];
-            $order_id = $csinvoice->getData()['orderId'];
-            
-            $order_status = 'pending';
-            if ($status == 'Expired'){ $order_status = give_get_option('coinsnap_expired_status'); }
-            else if ($status == 'Processing'){ $order_status = give_get_option('coinsnap_processing_status'); }
-            else if ($status == 'Settled'){ $order_status = give_get_option('coinsnap_settled_status'); }
-            
-            $order_status = 'wpi-pending';
-
-            if ($status == 'Expired') {
-                $order_status = wpinv_get_option('coinsnap_expired_status');
-            }
-            elseif ($status == 'Processing') {
-                $order_status = wpinv_get_option('coinsnap_processing_status');
-            }
-            elseif ($status == 'Settled') {
-                $order_status = wpinv_get_option('coinsnap_settled_status');
-            }
-
-            if (isset($order_id)) {
-                $invoice = wpinv_get_invoice($order_id);
-                if ($invoice && $this->id == $invoice->get_gateway()) {
-                    $invoice->set_status($order_status);
-                    $invoice->add_note(esc_html('Payment transaction - ' . $status, 'invoicing'), false, false, true);
-                    $invoice->save();
+                if (!isset($postData->invoiceId)) {
+                    wp_die('No Coinsnap invoiceId provided', '', ['response' => 400]);
                 }
-            }
 
-            echo "OK";
-            exit;
+                if(strpos($postData->invoiceId,'test_') !== false){
+                    wp_die('Successful webhook test', '', ['response' => 200]);
+                }
+
+                $invoice_id = esc_html($postData->invoiceId);
+
+                $client = new \Coinsnap\Client\Invoice($this->getApiUrl(), $this->getApiKey());
+                $csinvoice = $client->getInvoice($this->getStoreId(), $invoice_id);
+                $status = $csinvoice->getData()['status'];
+                $order_id = ($this->get_payment_provider() === 'btcpay')? $csinvoice->getData()['metadata']['orderId'] : $csinvoice->getData()['orderId'];
+
+                $order_status = 'wpi-pending';
+
+                switch($status){
+                    case 'Expired':
+                    case 'InvoiceExpired':
+                        $order_status = wpinv_get_option('coinsnap_expired_status');
+                        break;
+                    
+                    case 'Processing':
+                    case 'InvoiceProcessing':
+                        $order_status = wpinv_get_option('coinsnap_processing_status');
+                        break;
+                    
+                    case 'Settled':
+                    case 'InvoiceSettled':
+                        $order_status = wpinv_get_option('coinsnap_settled_status');
+                        break;
+                }
+
+                if (isset($order_id)) {
+                    $invoice = wpinv_get_invoice($order_id);
+                    if ($invoice && $this->id == $invoice->get_gateway()) {
+                        $invoice->set_status($order_status);
+                        $invoice->add_note(esc_html('Payment transaction - ' . $status, 'invoicing'), false, false, true);
+                        $invoice->save();
+                    }
+                }
+
+                echo "OK";
+                exit;
+            }
+            catch (JsonException $e) {
+                wp_die('Invalid JSON payload', '', ['response' => 400]);
+            }
         }
-        catch (JsonException $e) {
-            wp_die('Invalid JSON payload', '', ['response' => 400]);
-        }
+        
         catch (\Throwable $e) {
             wp_die('Internal server error', '', ['response' => 500]);
         }
@@ -570,13 +577,16 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
 
             $redirectUrl = esc_url_raw($this->get_return_url($invoice));
 
-
             $buyerEmail = $invoice->get_email();
             $buyerName = $invoice->get_first_name() . ' ' . $invoice->get_last_name();
 
             $metadata = [];
             $metadata['orderNumber'] = $invoice->get_number();
             $metadata['customerName'] = $buyerName;
+            
+            if($this->get_payment_provider() === 'btcpay') {
+                $metadata['orderId'] = $invoice->get_number();
+            }
 
             $redirectAutomatically = (wpinv_get_option( 'coinsnap_autoredirect') > 0)? true : false;
             $walletMessage = '';
@@ -679,10 +689,11 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
     public function registerWebhook(string $apiUrl, $apiKey, $storeId){
         try {
             $whClient = new Webhook( $apiUrl, $apiKey );
+            $webhook_events = ($this->get_payment_provider() === 'btcpay')? self::BTCPAY_WEBHOOK_EVENTS : self::COINSNAP_WEBHOOK_EVENTS;
             $webhook = $whClient->createWebhook(
                 $storeId,   //$storeId
 		$this->get_webhook_url(), //$url
-		self::WEBHOOK_EVENTS,   //$specificEvents
+		$webhook_events,   //$specificEvents
 		null    //$secret
             );
 
