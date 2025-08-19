@@ -440,7 +440,6 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
             // Get headers and check for signature
             $headers = getallheaders();
             $signature = null; $payloadKey = null;
-            $_provider = ($this->get_payment_provider() === 'btcpay')? 'btcpay' : 'coinsnap';
                 
             foreach ($headers as $key => $value) {
                 if (strtolower($key) === 'x-coinsnap-sig' || strtolower($key) === 'btcpay-sig') {
@@ -595,11 +594,18 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
             if($this->get_payment_provider() === 'btcpay') {
                 $metadata['orderId'] = $invoice->get_number();
             }
+            
+            $camount = \Coinsnap\Util\PreciseNumber::parseFloat($amount,2);
+                
+            // Handle Sats-mode because BTCPay does not understand SAT as a currency we need to change to BTC and adjust the amount.
+            if ($currency === 'SATS' && $this->get_payment_provider() === 'btcpay') {
+                $currency = 'BTC';
+                $amountBTC = bcdiv($camount->__toString(), '100000000', 8);
+                $camount = \Coinsnap\Util\PreciseNumber::parseString($amountBTC);
+            }
 
             $redirectAutomatically = (wpinv_get_option( 'coinsnap_autoredirect') > 0)? true : false;
             $walletMessage = '';
-
-            $camount = \Coinsnap\Util\PreciseNumber::parseFloat($amount, 2);
 
             $csinvoice = $client->createInvoice(
                 $this->getStoreId(),
