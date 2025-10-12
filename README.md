@@ -189,10 +189,10 @@ The Bitcoin + Lightning payment page is now displayed, offering the payer the op
 #### 1.0.2 :: 2025-08-19
 
 * Update: added convertation from SATS to BTC for BTCPay server.
-* Compatibility with Easy Digital Downloads 2.8.31 is tested.
+* Compatibility with GetPaid 2.8.31 is tested.
 
 #### 1.1.0 :: 2025-10-12
 
 * Update: Added non-supported by BTCPay server currencies handler on invoice request flow.
 * Update: Added custom redirect after payment page in module settings.
-* Compatibility with Easy Digital Downloads 2.8.35 is tested.
+* Compatibility with GetPaid 2.8.35 is tested.
