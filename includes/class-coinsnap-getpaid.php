@@ -6,8 +6,8 @@ if (!defined('ABSPATH')) {
 use Coinsnap\Client\Webhook;
 
 class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
-    public const COINSNAP_WEBHOOK_EVENTS = ['New','Expired','Settled','Processing','Invalid'];
-    public const BTCPAY_WEBHOOK_EVENTS = ['InvoiceCreated','InvoiceExpired','InvoiceSettled','InvoiceProcessing','InvoiceInvalid'];
+    public const COINSNAP_WEBHOOK_EVENTS = ['New','Expired','Settled','Processing'];
+    public const BTCPAY_WEBHOOK_EVENTS = ['InvoiceCreated','InvoiceExpired','InvoiceSettled','InvoiceProcessing'];
 
     public function __construct(){
         $this->id = 'coinsnap';
@@ -375,7 +375,7 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
                     'desc' => __( 'Enter Store ID', 'coinsnap-for-getpaid' ),
                     'type' => 'text',
                     'std'     => '',
-                'size' => 'regular',
+                    'size' => 'regular',
                     'class' => 'btcpay'
                 );
         $admin_settings['btcpay_api_key'] = array(
@@ -384,7 +384,7 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
                     'desc' => __( 'Enter API Key', 'coinsnap-for-getpaid' ),
                     'type' => 'text',
                     'std'     => '',
-                'size' => 'regular',
+                    'size' => 'regular',
                     'class' => 'btcpay'
                 );
         
@@ -396,6 +396,16 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
             'value'=> 1,
             'std' => 1
         );
+        
+        $admin_settings['coinsnap_returnurl'] = array(
+            'id'   => 'coinsnap_returnurl',
+            'name' => __('Return URL after payment', 'coinsnap-for-getpaid'),
+            'desc' => __('Custom return URL after successful payment (default URL if blank)', 'coinsnap-for-getpaid'),
+            'type' => 'text',
+            'std'     => '',
+            'size' => 'regular',
+        );
+        
         $admin_settings['coinsnap_expired_status'] = array(
             'id'   => 'coinsnap_expired_status',
             'name' => __('Expired Status', 'coinsnap-for-getpaid'),
@@ -582,7 +592,7 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
                 
         if($checkInvoice['result'] === true){
 
-            $redirectUrl = esc_url_raw($this->get_return_url($invoice));
+            $redirectUrl = (!empty(wpinv_get_option('coinsnap_returnurl')))? wpinv_get_option('coinsnap_returnurl') : esc_url_raw($this->get_return_url($invoice));
 
             $buyerEmail = $invoice->get_email();
             $buyerName = $invoice->get_first_name() . ' ' . $invoice->get_last_name();
@@ -595,15 +605,16 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
                 $metadata['orderId'] = $invoice->get_number();
             }
             
-            $camount = \Coinsnap\Util\PreciseNumber::parseFloat($amount,2);
+            // Handle currencies non-supported by BTCPay Server, we need to change them BTC and adjust the amount.
+                if (($currency === 'SATS' || $currency === 'RUB') && $this->get_payment_provider() === 'btcpay') {
+                    $currency = 'BTC';
+                    $rate = 1/$checkInvoice['rate'];
+                    $amountBTC = bcdiv(strval($amount), strval($rate), 8);
+                    $amount = (float)$amountBTC;
+                }
                 
-            // Handle Sats-mode because BTCPay does not understand SAT as a currency we need to change to BTC and adjust the amount.
-            if ($currency === 'SATS' && $this->get_payment_provider() === 'btcpay') {
-                $currency = 'BTC';
-                $amountBTC = bcdiv($camount->__toString(), '100000000', 8);
-                $camount = \Coinsnap\Util\PreciseNumber::parseString($amountBTC);
-            }
-
+            $camount = ($currency === 'BTC')? \Coinsnap\Util\PreciseNumber::parseFloat($amount,8) : \Coinsnap\Util\PreciseNumber::parseFloat($amount,2);
+                
             $redirectAutomatically = (wpinv_get_option( 'coinsnap_autoredirect') > 0)? true : false;
             $walletMessage = '';
 

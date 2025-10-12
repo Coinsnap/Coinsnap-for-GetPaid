@@ -2,7 +2,7 @@
 Contributors: coinsnap
 Tags:  Coinsnap, GetPaid, Bitcoin, Lightning, Invoicing 
 Tested up to: 6.8
-Stable tag: 1.0.2
+Stable tag: 1.1.0
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -193,3 +193,8 @@ Plugin's page on Coinsnap website: https://coinsnap.io/en/
 = 1.0.2 :: 2025-08-19 =
 * Update: added convertation from SATS to BTC for BTCPay server.
 * Compatibility with Easy Digital Downloads 2.8.31 is tested.
+
+= 1.1.0 :: 2025-10-12 =
+* Update: Added non-supported by BTCPay server currencies handler on invoice request flow.
+* Update: Added custom redirect after payment page in module settings.
+* Compatibility with Easy Digital Downloads 2.8.35 is tested.
