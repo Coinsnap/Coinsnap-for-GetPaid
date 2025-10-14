@@ -585,10 +585,10 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
         }
         
         $amount =  round($invoice->get_total(), 2);
-        $currency = $invoice->get_currency();
+        $currency = strtoupper($invoice->get_currency());
         
         $client = new \Coinsnap\Client\Invoice($this->getApiUrl(), $this->getApiKey());
-        $checkInvoice = $this->coinsnapgp_amount_validation($amount,strtoupper( $currency ));
+        $checkInvoice = $this->coinsnapgp_amount_validation($amount, $currency );
                 
         if($checkInvoice['result'] === true){
 
@@ -605,13 +605,27 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
                 $metadata['orderId'] = $invoice->get_number();
             }
             
-            // Handle currencies non-supported by BTCPay Server, we need to change them BTC and adjust the amount.
-                if (($currency === 'SATS' || $currency === 'RUB') && $this->get_payment_provider() === 'btcpay') {
-                    $currency = 'BTC';
-                    $rate = 1/$checkInvoice['rate'];
-                    $amountBTC = bcdiv(strval($amount), strval($rate), 8);
-                    $amount = (float)$amountBTC;
+            if($this->get_payment_provider() === 'btcpay' && $currency !== 'BTC'){
+                $store = new \Coinsnap\Client\Store($this->getApiUrl(), $this->getApiKey());
+                $btcpayCurrencies = $store -> getStoreCurrenciesRates($this->getStoreId(),array($currency));
+                $isCurrency = true;
+                if(!isset($btcpayCurrencies['result']['error']) && count($btcpayCurrencies['result']['currencies'])>0){
+                        if(!isset($btcpayCurrencies['result']['currencies']['BTC_'.$currency])){
+                            $isCurrency = false;
+                        }
                 }
+                else {
+                    $isCurrency = false;
+                }
+                    
+                // Handle currencies non-supported by BTCPay Server, we need to change them BTC and adjust the amount.
+                if( !$isCurrency ){
+                        $currency = 'BTC';
+                        $rate = 1/$checkInvoice['rate'];
+                        $amountBTC = bcdiv(strval($amount), strval($rate), 8);
+                        $amount = (float)$amountBTC;
+                }
+            }
                 
             $camount = ($currency === 'BTC')? \Coinsnap\Util\PreciseNumber::parseFloat($amount,8) : \Coinsnap\Util\PreciseNumber::parseFloat($amount,2);
                 
