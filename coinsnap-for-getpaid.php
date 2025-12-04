@@ -3,16 +3,16 @@
 /**
  * Plugin Name:     Bitcoin payments for Getpaid
  * Description:     Accept Bitcoin payments with Getpaid. All Bitcoin payments are transferred directly from your customer’s wallet into your Lightning wallet.
- * Version:         1.1.0
+ * Version:         1.1.1
  * Author:          Coinsnap
  * Author URI:      https://coinsnap.io
  * Text Domain:     coinsnap-for-getpaid
  * Domain Path:     /languages
  * Requires PHP:    7.4
- * Tested up to:    6.8
+ * Tested up to:    6.9
  * Requires at least: 6.0
  * Requires Plugins: invoicing
- * Getpaid tested up to: 2.8.35
+ * Getpaid tested up to: 2.8.36
  * License:         GPL2
  * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -21,7 +21,7 @@
 
 if (!defined( 'ABSPATH' )){ exit;}
 if(!defined('COINSNAPGP_PHP_VERSION')){define( 'COINSNAPGP_PHP_VERSION', '7.4' );}
-if(!defined('COINSNAPGP_VERSION')){define( 'COINSNAPGP_VERSION', '1.1.0' );}
+if(!defined('COINSNAPGP_VERSION')){define( 'COINSNAPGP_VERSION', '1.1.1' );}
 if(!defined('COINSNAPGP_REFERRAL_CODE')){define( 'COINSNAPGP_REFERRAL_CODE', 'D15432');}
 if(!defined('COINSNAPGP_PLUGIN_ID')){define( 'COINSNAPGP_PLUGIN_ID', 'coinsnap-for-getpaid' );}
 if(!defined('COINSNAPGP_PATH')){ define( 'COINSNAPGP_PATH', plugin_dir_path( __FILE__ ) ); }

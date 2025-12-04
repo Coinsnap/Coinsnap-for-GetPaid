@@ -1,8 +1,8 @@
 === Bitcoin payments for Getpaid ===
 Contributors: coinsnap
 Tags:  Coinsnap, GetPaid, Bitcoin, Lightning, Invoicing 
-Tested up to: 6.8
-Stable tag: 1.1.0
+Tested up to: 6.9
+Stable tag: 1.1.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -58,17 +58,17 @@ Coinsnap’s Bitcoin payment plugin for GetPaid makes it amazingly simple for yo
 == More information: ==
 
 * Demo store: [https://getpaid.coinsnap.org/](https://getpaid.coinsnap.org/)
-* Product page: [https://coinsnap.io/coinsnap-for-getpaid/](https://coinsnap.io/coinsnap-for-getpaid/)
-* Installation Guide: [https://coinsnap.io/getpaid-installation-guide/](https://coinsnap.io/getpaid-installation-guide/)
+* Product page: [https://coinsnap.io/modules/getpaid/](https://coinsnap.io/modules/getpaid/)
+* Installation Guide: [https://coinsnap.io/modules/getpaid/getpaid-installation-guide/](https://coinsnap.io/modules/getpaid/getpaid-installation-guide/)
 * GitHub: [https://github.com/Coinsnap/Coinsnap-for-GetPaid](https://github.com/Coinsnap/Coinsnap-for-GetPaid)
 
 
 == Documentation: ==
 
 * [Coinsnap API (1.0) documentation](https://docs.coinsnap.io/)
-* [Frequently Asked Questions](https://coinsnap.io/en/faq/) 
-* [Terms and Conditions](https://coinsnap.io/en/general-terms-and-conditions/)
-* [Privacy Policy](https://coinsnap.io/en/privacy/)
+* [Frequently Asked Questions](https://coinsnap.io/help/coinsnap-faq/) 
+* [Terms and Conditions](https://coinsnap.io/info/general-terms-and-conditions/)
+* [Privacy Policy](https://coinsnap.io/info/privacy-policy/)
 
 
 == Installation ==
@@ -131,7 +131,7 @@ In the Lightning Address field, enter the Lightning address to which the Bitcoin
 A Lightning address is similar to an e-mail address. Lightning payments are forwarded to this Lightning address and paid out. If you don’t have a Lightning address yet, set up a Lightning wallet that will provide you with a Lightning address.
 
 For more information on Lightning addresses and the corresponding Lightning wallet providers, click here:
-https://coinsnap.io/lightning-wallet-mit-lightning-adresse/
+https://coinsnap.io/blog/how-do-i-get-a-lightning-wallet/
 
 = 3. Connect Coinsnap account with GetPaid plug-in =
 
@@ -198,3 +198,7 @@ Plugin's page on Coinsnap website: https://coinsnap.io/en/
 * Update: Added non-supported by BTCPay server currencies handler on invoice request flow.
 * Update: Added custom redirect after payment page in module settings.
 * Compatibility with GetPaid 2.8.35 is tested.
+
+= 1.1.1 :: 2025-12-04 =
+* Compatibility with Wordpress 6.9 is tested.
+* Compatibility with GetPaid 2.8.36 is tested.
