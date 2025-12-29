@@ -6,7 +6,7 @@ Tags:  Lightning, Lightning Payment, SATS, Satoshi sats, bitcoin, Wordpress, Get
 Requires at least: 6.4
 Requires PHP: 7.4
 Tested up to: 6.9
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -200,3 +200,7 @@ The Bitcoin + Lightning payment page is now displayed, offering the payer the op
 #### 1.1.1 :: 2025-12-04
 * Compatibility with Wordpress 6.9 is tested.
 * Compatibility with GetPaid 2.8.36 is tested.
+
+#### 1.1.2 :: 2025-12-28 =
+* Compatibility with GetPaid 2.8.39 is tested.
+* Updated PHP files protection
