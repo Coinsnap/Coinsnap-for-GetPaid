@@ -46,6 +46,7 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
                 $messageAbort = __('Error on verifiying redirected API Key with stored BTCPay Server url. Aborting API wizard. Please try again or continue with manual setup.', 'coinsnap-for-getpaid');
                 $notice->addNotice('error', $messageAbort);
                 wp_redirect($CoinsnapBTCPaySettingsUrl);
+                exit();
             }
 
             // Data does get submitted with url-encoded payload, so parse $_POST here.
@@ -94,6 +95,7 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
 
             $notice->addNotice('error', __('Error processing the data from Coinsnap. Please try again.', 'coinsnap-for-getpaid'));
             wp_redirect($CoinsnapBTCPaySettingsUrl);
+            exit();
         });
         
         parent::__construct();
@@ -648,6 +650,7 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
 
             $payurl = $csinvoice->getData()['checkoutLink'];
             wp_redirect($payurl);
+            exit();
         }
         else {
             

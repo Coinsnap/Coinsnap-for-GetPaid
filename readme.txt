@@ -2,7 +2,7 @@
 Contributors: coinsnap
 Tags:  Coinsnap, GetPaid, Bitcoin, Lightning, Invoicing 
 Tested up to: 6.9
-Stable tag: 1.1.1
+Stable tag: 1.1.4
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -202,3 +202,15 @@ Plugin's page on Coinsnap website: https://coinsnap.io/en/
 = 1.1.1 :: 2025-12-04 =
 * Compatibility with Wordpress 6.9 is tested.
 * Compatibility with GetPaid 2.8.36 is tested.
+
+= 1.1.2 :: 2025-12-28 =
+* Compatibility with GetPaid 2.8.39 is tested.
+* Updated PHP files protection
+
+= 1.1.3 :: 2026-02-02 =
+* Compatibility with GetPaid 2.8.40 is tested.
+
+= 1.1.4 :: 2026-03-06 =
+* Compatibility with GetPaid 2.8.41 - 2.8.44 is tested.
+* Updated add-on description
+
