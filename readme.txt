@@ -1,8 +1,8 @@
 === Bitcoin payments for Getpaid ===
 Contributors: coinsnap
 Tags:  Coinsnap, GetPaid, Bitcoin, Lightning, Invoicing 
-Tested up to: 6.9
-Stable tag: 1.1.5
+Tested up to: 7.0
+Stable tag: 1.1.6
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,8 +21,8 @@ Coinsnap’s Bitcoin payment plugin for GetPaid makes it amazingly simple for yo
 
 = Accept Bitcoin payments with GetPaid in only 3 steps: =
 
-* Get your [free Coinsnap account](https://app.coinsnap.io/register) with just your email
-* Install, activate and configure the plugin in your WordPress backend ([see the installation guide](https://coinsnap.io/getpaid-installation-guide/))
+* Get your [free Coinsnap account](https://app.coinsnap.io/) with just your email
+* Install, activate and configure the plugin in your WordPress backend ([see the installation guide](https://coinsnap.io/user-guides/getpaid-bitcoin-user-guide/))
 * Create payment buttons, invoice forms etc. in GetPaid, place them at the appropriate places on your WordPress website and accept Bitcoin contributions from your global audience
 
 
@@ -58,8 +58,8 @@ Coinsnap’s Bitcoin payment plugin for GetPaid makes it amazingly simple for yo
 == More information: ==
 
 * Demo store: [https://getpaid.coinsnap.org/](https://getpaid.coinsnap.org/)
-* Product page: [https://coinsnap.io/modules/getpaid/](https://coinsnap.io/modules/getpaid/)
-* Installation Guide: [https://coinsnap.io/modules/getpaid/getpaid-installation-guide/](https://coinsnap.io/modules/getpaid/getpaid-installation-guide/)
+* Product page: [https://coinsnap.io/wp-add-ons/getpaid/](https://coinsnap.io/wp-add-ons/getpaid/)
+* Installation Guide: [https://coinsnap.io/user-guides/getpaid-bitcoin-user-guide/](https://coinsnap.io/user-guides/getpaid-bitcoin-user-guide/)
 * GitHub: [https://github.com/Coinsnap/Coinsnap-for-GetPaid](https://github.com/Coinsnap/Coinsnap-for-GetPaid)
 
 
@@ -67,7 +67,7 @@ Coinsnap’s Bitcoin payment plugin for GetPaid makes it amazingly simple for yo
 
 * [Coinsnap API (1.0) documentation](https://docs.coinsnap.io/)
 * [Frequently Asked Questions](https://coinsnap.io/help/coinsnap-faq/) 
-* [Terms and Conditions](https://coinsnap.io/info/general-terms-and-conditions/)
+* [Terms of Service](https://coinsnap.io/info/terms-of-service/)
 * [Privacy Policy](https://coinsnap.io/info/privacy-policy/)
 
 
@@ -155,12 +155,11 @@ The Bitcoin + Lightning payment page is now displayed, offering the payer the op
 
 == Upgrade Notice ==
 
-Follow updates on plugin's GitHub page:
-https://github.com/Coinsnap/Coinsnap-for-GetPaid/
+Follow updates on plugin's GitHub page: [https://github.com/Coinsnap/Coinsnap-for-GetPaid/](https://github.com/Coinsnap/Coinsnap-for-GetPaid/)
 
 == Frequently Asked Questions ==
 
-Plugin's page on Coinsnap website: https://coinsnap.io/en/
+Plugin's page on Coinsnap website: [https://coinsnap.io/wp-add-ons/getpaid/](https://coinsnap.io/wp-add-ons/getpaid/)
 
 == Screenshots ==
 
@@ -219,4 +218,9 @@ Plugin's page on Coinsnap website: https://coinsnap.io/en/
 * Updated \Coinsnap\Client\Store class.
 * Compatibility with GetPaid 2.8.47 is tested.
 * Compatibility with Wordpress 6.9.4 is tested.
+
+= 1.1.6 :: 2026-05-24 =
+* Compatibility with GetPaid 2.8.48 is tested.
+* Compatibility with Wordpress 7.0 is tested.
+
 
