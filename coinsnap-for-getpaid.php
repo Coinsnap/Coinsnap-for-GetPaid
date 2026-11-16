@@ -21,6 +21,12 @@
  */
 
 if (!defined( 'ABSPATH' )){ exit;}
+// When invoice records started: webhooks for older orders without one are accepted only shortly after.
+add_action('init', function () {
+    if (!get_option('coinsnapgp_records_since')) {
+        update_option('coinsnapgp_records_since', time(), true);
+    }
+});
 if(!defined('COINSNAPGP_PHP_VERSION')){define( 'COINSNAPGP_PHP_VERSION', '7.4' );}
 if(!defined('COINSNAPGP_VERSION')){define( 'COINSNAPGP_VERSION', '1.2.0' );}
 if(!defined('COINSNAPGP_REFERRAL_CODE')){define( 'COINSNAPGP_REFERRAL_CODE', 'D15432');}
