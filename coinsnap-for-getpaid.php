@@ -4,7 +4,7 @@
  * Plugin Name:     Bitcoin payments for Getpaid
  * Plugin URI:      https://coinsnap.io/wp-add-ons/getpaid/
  * Description:     Accept Bitcoin payments with Getpaid. All Bitcoin payments are transferred directly from your customer’s wallet into your Lightning wallet.
- * Version:         1.1.5
+ * Version:         1.2.0
  * Author:          Coinsnap
  * Author URI:      https://coinsnap.io
  * Text Domain:     coinsnap-for-getpaid
@@ -22,7 +22,7 @@
 
 if (!defined( 'ABSPATH' )){ exit;}
 if(!defined('COINSNAPGP_PHP_VERSION')){define( 'COINSNAPGP_PHP_VERSION', '7.4' );}
-if(!defined('COINSNAPGP_VERSION')){define( 'COINSNAPGP_VERSION', '1.1.5' );}
+if(!defined('COINSNAPGP_VERSION')){define( 'COINSNAPGP_VERSION', '1.2.0' );}
 if(!defined('COINSNAPGP_REFERRAL_CODE')){define( 'COINSNAPGP_REFERRAL_CODE', 'D15432');}
 if(!defined('COINSNAPGP_PLUGIN_ID')){define( 'COINSNAPGP_PLUGIN_ID', 'coinsnap-for-getpaid' );}
 if(!defined('COINSNAPGP_PATH')){ define( 'COINSNAPGP_PATH', plugin_dir_path( __FILE__ ) ); }
@@ -33,6 +33,9 @@ if(!defined('COINSNAP_SERVER_PATH')){define( 'COINSNAP_SERVER_PATH', 'stores' );
 if(!defined('COINSNAP_CURRENCIES')){define( 'COINSNAP_CURRENCIES', array("EUR","USD","SATS","BTC","CAD","JPY","GBP","CHF","RUB") );}
 
 require_once(dirname(__FILE__) . "/library/loader.php");
+require_once(dirname(__FILE__) . "/includes/Webhook/Signature.php");
+require_once(dirname(__FILE__) . "/includes/Webhook/InvoiceDecision.php");
+require_once(dirname(__FILE__) . "/includes/Webhook/WebhookHandler.php");
 
 function coinsnapgp_init(){
     require_once(plugin_dir_path(__FILE__) . 'includes/class-coinsnap-getpaid.php');
@@ -49,7 +52,6 @@ add_action('init', function() {
 add_filter('request', function($vars) {
     if (isset($vars['coinsnap-for-getpaid-btcpay-settings-callback'])) {
         $vars['coinsnap-for-getpaid-btcpay-settings-callback'] = true;
-        $vars['coinsnap-for-getpaid-btcpay-nonce'] = wp_create_nonce( 'coinsnapgp-btcpay-nonce' );
     }
     return $vars;
 });

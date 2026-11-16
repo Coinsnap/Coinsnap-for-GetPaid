@@ -252,6 +252,16 @@ Coinsnap charges a 1% transaction fee.
 
 ## Changelog
 
+### 1.2.0 (2026-11-16)
+- Security: Webhooks are verified with the timestamped X-Coinsnap-Signature header (Coinsnap) or BTCPay-Sig (BTCPay Server), with a timing-safe comparison. A missing webhook secret rejects every webhook.
+- Security: A GetPaid invoice is marked paid only when the Coinsnap invoice is settled, was created by this plugin for it, and matches the amount and currency it asked for. It is marked paid through GetPaid's own "mark paid", once. Before, any invoice in the store with a matching number set the configured status.
+- Security: "Processing" never marks an invoice paid, and paid or refunded invoices are never changed by a later webhook. BTCPay invoices marked settled by hand are not accepted. The "Settled Status" setting is no longer used.
+- Security: The BTCPay Server setup callback only accepts a one-time code issued by the settings page, and the server URL is saved only together with a verified key. Before, anyone could post an API key and switch the site to their own BTCPay store.
+- Security: The API key fields no longer show the saved key; leave them empty to keep it. A BTCPay key is not kept when the server URL changes.
+- Security: The library no longer sends an Access-Control-Allow-Origin: * header, and API error replies are no longer copied into error messages or admin notices.
+- Fix: A payment server outage no longer deletes and re-registers the webhook, a failed webhook registration no longer causes a fatal error at checkout, and a failed invoice creation shows an error instead of a blank redirect.
+- Fix: The exchange rate lookup gives up after 3 tries instead of retrying forever.
+
 ### 1.1.6 — 2026-05-24
 - Compatibility with GetPaid 2.8.48 tested.
 - Compatibility with WordPress 7.0 tested.
