@@ -76,6 +76,13 @@ class WebhookHandler
             $this->logSecurity($claimsPaid ? 'forged status' : 'amount mismatch', $invoiceId);
             return 200;
         }
+        // A pending GetPaid invoice can still be edited; an invoice for the old total must not pay the new one.
+        if ($decision === InvoiceDecision::PAID && isset($expected['invoice_total'])
+            && (InvoiceDecision::toMinorUnits((string) $payment['total']) !== InvoiceDecision::toMinorUnits((string) $expected['invoice_total'])
+                || (string) $payment['currency'] !== (string) ($expected['invoice_currency'] ?? ''))) {
+            $this->logSecurity('invoice total changed', $invoiceId);
+            return 200;
+        }
         if ($decision === InvoiceDecision::NONE) {
             $this->logInfo('no change', $invoiceId);
             return 200;

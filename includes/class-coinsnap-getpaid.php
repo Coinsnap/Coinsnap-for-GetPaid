@@ -601,7 +601,12 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
             // Only invoices recorded on the GetPaid invoice can pay it, and only for the amount and currency sent.
             $invoices = get_post_meta($invoice->get_id(), '_coinsnap_invoices', true);
             $invoices = is_array($invoices) ? $invoices : [];
-            $invoices[(string) $invoiceData['id']] = ['amount' => (string) $camount, 'currency' => $currency];
+            $invoices[(string) $invoiceData['id']] = [
+                'amount' => (string) $camount,
+                'currency' => $currency,
+                'invoice_total' => (string) $invoice->get_total(),
+                'invoice_currency' => (string) $invoice->get_currency(),
+            ];
             update_post_meta($invoice->get_id(), '_coinsnap_invoices', $invoices);
 
             wp_redirect($invoiceData['checkoutLink']);
