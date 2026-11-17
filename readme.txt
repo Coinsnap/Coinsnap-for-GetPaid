@@ -249,6 +249,11 @@ Coinsnap charges a 1% transaction fee.
 * Security: The library no longer sends an Access-Control-Allow-Origin: * header, and API error replies are no longer copied into error messages or admin notices.
 * Fix: A payment server outage no longer deletes and re-registers the webhook, a failed webhook registration no longer causes a fatal error at checkout, and a failed invoice creation shows an error instead of a blank redirect.
 * Fix: The exchange rate lookup gives up after 3 tries instead of retrying forever.
+* Security: The BTCPay Server setup callback asks BTCPay what the received key may do (api-keys/current) and takes the store from that answer; permissions and store ID posted with the key are ignored. Only a key limited to one store with exactly the needed permissions is accepted, also when it is pasted on the settings page.
+* Security: The BTCPay key request asks only for the permissions the plugin uses (no more invoice modification or pull payments).
+* Security: Opening the settings page no longer registers or deletes webhooks; the nonce-checked connection check does that.
+* Fix: The plugin runs on PHP 7.4 again, as its header says.
+* Uninstalling removes the plugin's webhook record and its keys from the GetPaid settings.
 
 = 1.1.6 :: 2026-05-24 =
 * Compatibility with GetPaid 2.8.48 is tested.
