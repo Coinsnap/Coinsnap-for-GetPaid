@@ -20,6 +20,9 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
             add_action( 'admin_enqueue_scripts', [$this, 'enqueueAdminScripts'] );
             add_action( 'wp_ajax_coinsnapgp_connection_handler', [$this, 'coinsnapConnectionHandler'] );
             add_action( 'wp_ajax_coinsnapgp_btcpay_server_apiurl_handler', [$this, 'btcpayApiUrlHandler']);
+            add_action( 'wpinv_coinsnap_api_key', [$this, 'renderApiKeyField']);
+            add_action( 'wpinv_btcpay_api_key', [$this, 'renderApiKeyField']);
+            add_filter( 'wpinv_settings_gateways-coinsnap_sanitize', [$this, 'keepStoredApiKeys']);
         }
         
         // Adding template redirect handling for coinsnap-for-getpaid-btcpay-settings-callback.
@@ -32,68 +35,43 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
                 return;
             }
             
-            if(!isset($wp_query->query_vars['coinsnap-for-getpaid-btcpay-nonce']) || !wp_verify_nonce($wp_query->query_vars['coinsnap-for-getpaid-btcpay-nonce'],'coinsnapgp-btcpay-nonce')){
-                return;
+            $CoinsnapBTCPaySettingsUrl = admin_url('admin.php?page=wpinv-settings&tab=gateways&section=coinsnap');
+
+            // BTCPay posts here from the admin's browser; only the state handed out by btcpayApiUrlHandler() is accepted, once.
+            $state = isset($_GET['state']) ? preg_replace('/[^A-Za-z0-9]/', '', (string) wp_unslash($_GET['state'])) : '';
+            $stateHost = ($state !== '') ? get_transient('coinsnapgp_btcpay_state_' . $state) : false;
+            if ($state !== '') {
+                delete_transient('coinsnapgp_btcpay_state_' . $state);
+            }
+            $btcpay_server_url = is_string($stateHost) ? $stateHost : '';
+            if ($btcpay_server_url === '') {
+                status_header(403);
+                exit();
             }
 
-            $CoinsnapBTCPaySettingsUrl = admin_url('admin.php?page=wpinv-settings&tab=gateways&section=coinsnap');
-            
-            $btcpay_server_url = wpinv_get_option( 'btcpay_server_url');
-            $btcpay_api_key  = filter_input(INPUT_POST,'apiKey',FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-
-            $client = new \Coinsnap\Client\Store($btcpay_server_url,$btcpay_api_key);
-            if (count($client->getStores()) < 1) {
-                $messageAbort = __('Error on verifiying redirected API Key with stored BTCPay Server url. Aborting API wizard. Please try again or continue with manual setup.', 'coinsnap-for-getpaid');
-                $notice->addNotice('error', $messageAbort);
+            $apiKey = isset($_POST['apiKey']) ? sanitize_text_field(wp_unslash($_POST['apiKey'])) : '';
+            // Permissions and store come from BTCPay itself; whatever the POST claims about them is ignored.
+            $storeId = ($apiKey !== '') ? \CoinsnapGP\BtcpayKey::verify($btcpay_server_url, $apiKey) : null;
+            if ($storeId === null) {
+                $notice->addNotice('error', __('The BTCPay API key was refused. Create a key for exactly one store with the requested permissions, or continue with manual setup.', 'coinsnap-for-getpaid'));
                 wp_redirect($CoinsnapBTCPaySettingsUrl);
                 exit();
             }
 
-            // Data does get submitted with url-encoded payload, so parse $_POST here.
-            if (!empty($_POST)) {
-                $data['apiKey'] = filter_input(INPUT_POST,'apiKey',FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?? null;
-                if(isset($_POST['permissions'])){
-                    $permissions = array_map('sanitize_text_field', wp_unslash($_POST['permissions']));
-                    if(is_array($permissions)){
-                        foreach ($permissions as $key => $value) {
-                            $data['permissions'][$key] = sanitize_text_field($permissions[$key] ?? null);
-                        }
-                    }
-                }
+            wpinv_update_option( 'btcpay_server_url', $btcpay_server_url);
+            wpinv_update_option( 'btcpay_api_key', $apiKey);
+            wpinv_update_option( 'btcpay_store_id', $storeId);
+            wpinv_update_option( 'coinsnap_provider', 'btcpay');
+
+            $notice->addNotice('success', __('Successfully received api key and store id from BTCPay Server API. Please finish setup by saving this settings form.', 'coinsnap-for-getpaid'));
+
+            // Register a webhook.
+            if ($this->registerWebhook($btcpay_server_url, $apiKey, $storeId)) {
+                $notice->addNotice('success', __( 'Successfully registered a new webhook on BTCPay Server.', 'coinsnap-for-getpaid' ), true );
             }
-
-            if (isset($data['apiKey']) && isset($data['permissions'])) {
-
-                $apiData = new \Coinsnap\Client\BTCPayApiAuthorization($data);
-                if ($apiData->hasSingleStore() && $apiData->hasRequiredPermissions()) {
-
-                    wpinv_update_option( 'btcpay_api_key', $apiData->getApiKey());
-                    wpinv_update_option( 'btcpay_store_id', $apiData->getStoreID());
-                    wpinv_update_option( 'coinsnap_provider', 'btcpay');
-
-                    $notice->addNotice('success', __('Successfully received api key and store id from BTCPay Server API. Please finish setup by saving this settings form.', 'coinsnap-for-getpaid'));
-
-                    // Register a webhook.
-
-                    if ($this->registerWebhook($this->getApiUrl(), $apiData->getApiKey(), $apiData->getStoreID())) {
-                        $messageWebhookSuccess = __( 'Successfully registered a new webhook on BTCPay Server.', 'coinsnap-for-getpaid' );
-                        $notice->addNotice('success', $messageWebhookSuccess, true );
-                    }
-                    else {
-                        $messageWebhookError = __( 'Could not register a new webhook on the store.', 'coinsnap-for-getpaid' );
-                        $notice->addNotice('error', $messageWebhookError );
-                    }
-                    wp_redirect($CoinsnapBTCPaySettingsUrl);
-                    exit();
-                }
-                else {
-                    $notice->addNotice('error', __('Please make sure you only select one store on the BTCPay API authorization page.', 'coinsnap-for-getpaid'));
-                    wp_redirect($CoinsnapBTCPaySettingsUrl);
-                    exit();
-                }
+            else {
+                $notice->addNotice('error', __( 'Could not register a new webhook on the store.', 'coinsnap-for-getpaid' ) );
             }
-
-            $notice->addNotice('error', __('Error processing the data from Coinsnap. Please try again.', 'coinsnap-for-getpaid'));
             wp_redirect($CoinsnapBTCPaySettingsUrl);
             exit();
         });
@@ -103,7 +81,11 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
     
     public function coinsnapConnectionHandler(){
         
-        $_nonce = filter_input(INPUT_POST,'_wpnonce',FILTER_SANITIZE_STRING);
+        $_nonce = filter_input(INPUT_POST,'_wpnonce',FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+        // Before any API call: it can re-register the webhook and replace its secret.
+        if (!wp_verify_nonce((string) $_nonce, 'coinsnapgp-ajax-nonce') || !current_user_can('manage_options')) {
+            wp_send_json_error(['message' => 'Not allowed'], 403);
+        }
         
         if(empty($this->getApiUrl()) || empty($this->getApiKey())){
             $response = [
@@ -210,28 +192,22 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
      * Handles the BTCPay server AJAX callback from the settings form.
      */
     public function btcpayApiUrlHandler() {
-        $_nonce = filter_input(INPUT_POST,'apiNonce',FILTER_SANITIZE_STRING);
+        $_nonce = filter_input(INPUT_POST,'apiNonce',FILTER_SANITIZE_FULL_SPECIAL_CHARS);
         if ( !wp_verify_nonce( $_nonce, 'coinsnapgp-ajax-nonce' ) ) {
             wp_die('Unauthorized!', '', ['response' => 401]);
         }
         
         if ( current_user_can( 'manage_options' ) ) {
-            $host = filter_var(filter_input(INPUT_POST,'host',FILTER_SANITIZE_STRING), FILTER_VALIDATE_URL);
+            $host = filter_var(trim((string) filter_input(INPUT_POST,'host',FILTER_UNSAFE_RAW)), FILTER_VALIDATE_URL);
 
             if ($host === false || (substr( $host, 0, 7 ) !== "http://" && substr( $host, 0, 8 ) !== "https://")) {
                 wp_send_json_error("Error validating BTCPayServer URL.");
             }
 
-            $permissions = array_merge([
-		'btcpay.store.canviewinvoices',
-		'btcpay.store.cancreateinvoice',
-		'btcpay.store.canviewstoresettings',
-		'btcpay.store.canmodifyinvoices'
-            ],
-            [
-		'btcpay.store.cancreatenonapprovedpullpayments',
-		'btcpay.store.webhooks.canmodifywebhooks',
-            ]);
+            $permissions = \CoinsnapGP\BtcpayKey::NEEDED_PERMISSIONS;
+
+            $state = wp_generate_password(32, false);
+            set_transient('coinsnapgp_btcpay_state_' . $state, $host, 15 * MINUTE_IN_SECONDS);
 
             try {
 		// Create the redirect url to BTCPay instance.
@@ -241,19 +217,18 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
                     'GetPaid',
                     true,
                     true,
-                    home_url('?coinsnap-for-getpaid-btcpay-settings-callback'),
+                    add_query_arg('state', $state, home_url('?coinsnap-for-getpaid-btcpay-settings-callback')),
                     null
 		);
 
-		// Store the host to options before we leave the site.
-		wpinv_update_option('btcpay_server_url', $host);
+		// The host is saved only by the callback, once a key for it is verified; the stored key never goes to an unverified host.
 
 		// Return the redirect url.
 		wp_send_json_success(['url' => $url]);
             }
             
             catch (\Throwable $e) {
-                
+                wp_send_json_error("Error processing Ajax request.");
             }
 	}
         wp_send_json_error("Error processing Ajax request.");
@@ -267,7 +242,7 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
         $page = (filter_input(INPUT_GET,'page',FILTER_SANITIZE_FULL_SPECIAL_CHARS ))? filter_input(INPUT_GET,'page',FILTER_SANITIZE_FULL_SPECIAL_CHARS ) : '';
         $tab = (filter_input(INPUT_GET,'tab',FILTER_SANITIZE_FULL_SPECIAL_CHARS ))? filter_input(INPUT_GET,'tab',FILTER_SANITIZE_FULL_SPECIAL_CHARS ) : '';
         
-        if($page === 'wpinv-settings' && $tab === 'gateways' && !isset($_COOKIE['coinsnap_notices'])){
+        if($page === 'wpinv-settings' && $tab === 'gateways' && !isset($_COOKIE['coinsnap_notices']) && current_user_can('manage_options')){
             $coinsnap_url = $this->getApiUrl();
             $coinsnap_api_key = $this->getApiKey();
             $coinsnap_store_id = $this->getStoreId();
@@ -293,32 +268,15 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
                         esc_html_e('GetPaid: Established connection to Coinsnap Server', 'coinsnap-for-getpaid');
                         echo '</p></div>';
                         
-                        if ( !$this->webhookExists( $coinsnap_url, $coinsnap_api_key, $coinsnap_store_id ) ) {
-                            if ( ! $this->registerWebhook( $coinsnap_url, $coinsnap_api_key, $coinsnap_store_id ) ) {
-                                echo '<div class="notice notice-error"><p>';
-                                esc_html_e('GetPaid: Unable to create webhook on Coinsnap Server', 'coinsnap-for-getpaid');
-                                echo '</p></div>';
-                            }
-                            else {
-                                echo '<div class="notice notice-success"><p>';
-                                esc_html_e('GetPaid: Successfully registered a new webhook on Coinsnap Server', 'coinsnap-for-getpaid');
-                                echo '</p></div>';
-                            }
-                        }
-                        else {
-                            echo '<div class="notice notice-info"><p>';
-                            esc_html_e('GetPaid: Webhook already exists, skipping webhook creation', 'coinsnap-for-getpaid');
-                            echo '</p></div>';
-                        }
+                        // The webhook is checked and registered by the connection check (nonce and capability), not on a page view.
                     }
                     else {
                             echo '<div class="notice notice-error"><p>';
-                            esc_html_e('GetPaid: Coinsnap connection error:', 'coinsnap-for-getpaid');
-                            echo esc_html($store['result']['message']);
+                            esc_html_e('GetPaid: Coinsnap connection error. Check the Store ID and API key.', 'coinsnap-for-getpaid');
                             echo '</p></div>';
                     }
                 }
-                catch (\Exception $e) {
+                catch (\Throwable $e) {
                     echo '<div class="notice notice-error"><p>';
                     esc_html_e('GetPaid: API connection is not established', 'coinsnap-for-getpaid');
                     echo '</p></div>';
@@ -357,7 +315,7 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
             'name' => __('API Key', 'coinsnap-for-getpaid'),
             'desc' => __('Enter API Key', 'coinsnap-for-getpaid'),
             'class'=> 'coinsnap',
-            'type' => 'text',
+            'type' => 'hook',
         );
         
         //  BTCPay fields
@@ -384,7 +342,7 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
                     'id'   => 'btcpay_api_key',
                     'name' => __( 'API Key*', 'coinsnap-for-getpaid' ),
                     'desc' => __( 'Enter API Key', 'coinsnap-for-getpaid' ),
-                    'type' => 'text',
+                    'type' => 'hook',
                     'std'     => '',
                     'size' => 'regular',
                     'class' => 'btcpay'
@@ -419,7 +377,7 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
         $admin_settings['coinsnap_settled_status'] = array(
             'id'   => 'coinsnap_settled_status',
             'name' => __('Settled Status', 'coinsnap-for-getpaid'),
-            'desc' => __('Select Settled Status', 'coinsnap-for-getpaid'),
+            'desc' => __('Not used since 1.2.0: a settled invoice is always marked paid through GetPaid.', 'coinsnap-for-getpaid'),
             'type'        => 'select',
             'std'         => 'publish',
             'options'     => $statuses,
@@ -437,99 +395,27 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
     }
 
     public function process_webhook(){
-
-        if (null === filter_input(INPUT_GET,'getpaid-listener',FILTER_SANITIZE_FULL_SPECIAL_CHARS) || filter_input(INPUT_GET,'getpaid-listener',FILTER_SANITIZE_FULL_SPECIAL_CHARS) !== 'coinsnap') {
+        if (filter_input(INPUT_GET, 'getpaid-listener', FILTER_SANITIZE_FULL_SPECIAL_CHARS) !== 'coinsnap') {
             return;
         }
-        
-        try {
-            // First check if we have any input
-            $rawPostData = file_get_contents("php://input");
-            if (!$rawPostData) {
-                wp_die('No raw post data received', '', ['response' => 400]);
-            }
+        $provider = $this->get_payment_provider();
+        $webhook = get_option('wpinv_settings_coinsnap_webhook');
+        $secret = is_array($webhook) ? (string) ($webhook['secret'] ?? '') : '';
+        $header = ($provider === 'btcpay') ? 'HTTP_BTCPAY_SIG' : 'HTTP_X_COINSNAP_SIGNATURE';
+        $statuses = [
+            'settled' => 'publish',
+            'processing' => (string) wpinv_get_option('coinsnap_processing_status', 'wpi-processing'),
+            'expired' => (string) wpinv_get_option('coinsnap_expired_status', 'wpi-cancelled'),
+        ];
 
-            // Get headers and check for signature
-            $headers = getallheaders();
-            $signature = null; $payloadKey = null;
-                
-            foreach ($headers as $key => $value) {
-                if (strtolower($key) === 'x-coinsnap-sig' || strtolower($key) === 'btcpay-sig') {
-                    $signature = $value;
-                    $payloadKey = strtolower($key);
-                }
-            }
-
-            // Handle missing or invalid signature
-            if (!isset($signature)) {
-                wp_die('Authentication required', '', ['response' => 401]);
-            }
-
-            // Validate the signature
-            $webhook = get_option( 'wpinv_settings_coinsnap_webhook');
-            if (!Webhook::isIncomingWebhookRequestValid($rawPostData, $signature, $webhook['secret'])) {
-                wp_die('Invalid authentication signature for '.esc_html($payloadKey), '', ['response' => 401]);
-            }
-            
-            try {
-
-                // Parse the JSON payload
-                $postData = json_decode($rawPostData, false, 512, JSON_THROW_ON_ERROR);
-
-                if (!isset($postData->invoiceId)) {
-                    wp_die('No Coinsnap invoiceId provided', '', ['response' => 400]);
-                }
-
-                if(strpos($postData->invoiceId,'test_') !== false){
-                    wp_die('Successful webhook test', '', ['response' => 200]);
-                }
-
-                $invoice_id = esc_html($postData->invoiceId);
-
-                $client = new \Coinsnap\Client\Invoice($this->getApiUrl(), $this->getApiKey());
-                $csinvoice = $client->getInvoice($this->getStoreId(), $invoice_id);
-                $status = $csinvoice->getData()['status'];
-                $order_id = ($this->get_payment_provider() === 'btcpay')? $csinvoice->getData()['metadata']['orderId'] : $csinvoice->getData()['orderId'];
-
-                $order_status = 'wpi-pending';
-
-                switch($status){
-                    case 'Expired':
-                    case 'InvoiceExpired':
-                        $order_status = wpinv_get_option('coinsnap_expired_status');
-                        break;
-                    
-                    case 'Processing':
-                    case 'InvoiceProcessing':
-                        $order_status = wpinv_get_option('coinsnap_processing_status');
-                        break;
-                    
-                    case 'Settled':
-                    case 'InvoiceSettled':
-                        $order_status = wpinv_get_option('coinsnap_settled_status');
-                        break;
-                }
-
-                if (isset($order_id)) {
-                    $invoice = wpinv_get_invoice($order_id);
-                    if ($invoice && $this->id == $invoice->get_gateway()) {
-                        $invoice->set_status($order_status);
-                        $invoice->add_note(esc_html('Payment transaction - ' . $status, 'invoicing'), false, false, true);
-                        $invoice->save();
-                    }
-                }
-
-                echo "OK";
-                exit;
-            }
-            catch (JsonException $e) {
-                wp_die('Invalid JSON payload', '', ['response' => 400]);
-            }
-        }
-        
-        catch (\Throwable $e) {
-            wp_die('Internal server error', '', ['response' => 500]);
-        }
+        $status = (new \CoinsnapGP\Webhook\WebhookHandler($provider, $secret, $statuses))->handle(
+            (string) file_get_contents('php://input'),
+            isset($_SERVER[$header]) ? (string) wp_unslash($_SERVER[$header]) : '',
+            time()
+        );
+        status_header($status);
+        echo $status === 200 ? 'OK' : ($status === 401 ? 'Unauthorized' : 'Retry');
+        exit;
     }
     
     public function coinsnapgp_amount_validation( $amount, $currency ) {
@@ -579,11 +465,15 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
 
     public function process_payment($invoice, $submission_data, $submission){
 
-        if (!$this->webhookExists($this->getApiUrl(), $this->getApiKey(), $this->getStoreId())) {
-            if (!$this->registerWebhook($this->getApiUrl(), $this->getApiKey(), $this->getStoreId())) {
-                wpinv_set_error( 'Connection error', esc_html__('Unable to set Webhook URL.', 'coinsnap-for-getpaid') );
-                wpinv_send_back_to_checkout( $invoice );
-            }
+        try {
+            $webhookReady = $this->webhookExists($this->getApiUrl(), $this->getApiKey(), $this->getStoreId())
+                || $this->registerWebhook($this->getApiUrl(), $this->getApiKey(), $this->getStoreId());
+        } catch (\Throwable $e) {
+            $webhookReady = false;
+        }
+        if (!$webhookReady) {
+            wpinv_set_error( 'Connection error', esc_html__('The payment could not be started. Please try again later.', 'coinsnap-for-getpaid') );
+            wpinv_send_back_to_checkout( $invoice );
         }
         
         $amount =  round($invoice->get_total(), 2);
@@ -634,22 +524,42 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
             $redirectAutomatically = (wpinv_get_option( 'coinsnap_autoredirect') > 0)? true : false;
             $walletMessage = '';
 
-            $csinvoice = $client->createInvoice(
-                $this->getStoreId(),
-                $currency,
-                $camount,
-                $invoice->get_number(),
-                $buyerEmail,
-                $buyerName,
-                $redirectUrl,
-                COINSNAPGP_REFERRAL_CODE,
-                $metadata,
-                $redirectAutomatically,
-                $walletMessage
-            );
+            try {
+                $invoiceData = $client->createInvoice(
+                    $this->getStoreId(),
+                    $currency,
+                    $camount,
+                    $invoice->get_number(),
+                    $buyerEmail,
+                    $buyerName,
+                    $redirectUrl,
+                    COINSNAPGP_REFERRAL_CODE,
+                    $metadata,
+                    $redirectAutomatically,
+                    $walletMessage
+                )->getData();
+            } catch (\Throwable $e) {
+                $invoiceData = [];
+            }
 
-            $payurl = $csinvoice->getData()['checkoutLink'];
-            wp_redirect($payurl);
+            if (empty($invoiceData['checkoutLink']) || empty($invoiceData['id'])) {
+                wpinv_set_error( 'Payment error', esc_html__('The payment could not be started. Please try again later.', 'coinsnap-for-getpaid') );
+                wpinv_send_back_to_checkout( $invoice );
+                exit();
+            }
+
+            // Only invoices recorded on the GetPaid invoice can pay it, and only for the amount and currency sent.
+            $invoices = get_post_meta($invoice->get_id(), '_coinsnap_invoices', true);
+            $invoices = is_array($invoices) ? $invoices : [];
+            $invoices[(string) $invoiceData['id']] = [
+                'amount' => (string) $camount,
+                'currency' => $currency,
+                'invoice_total' => (string) $invoice->get_total(),
+                'invoice_currency' => (string) $invoice->get_currency(),
+            ];
+            update_post_meta($invoice->get_id(), '_coinsnap_invoices', $invoices);
+
+            wp_redirect($invoiceData['checkoutLink']);
             exit();
         }
         else {
@@ -696,67 +606,97 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
         return ($this->get_payment_provider() === 'btcpay')? wpinv_get_option( 'btcpay_server_url') : COINSNAP_SERVER_URL;
     }
 
+    // Throws when the API can't be asked; the caller must not treat that as "no webhook".
     public function webhookExists(string $apiUrl, string $apiKey, string $storeId): bool {
-	$whClient = new Webhook( $apiUrl, $apiKey );
-	if ($storedWebhook = get_option( 'wpinv_settings_coinsnap_webhook')) {
-            
+        $whClient = new Webhook($apiUrl, $apiKey);
+        $stored = get_option('wpinv_settings_coinsnap_webhook');
+
+        if (is_array($stored) && !empty($stored['id']) && !empty($stored['secret'])) {
             try {
-		$existingWebhook = $whClient->getWebhook( $storeId, $storedWebhook['id'] );
-                
-                if($existingWebhook->getData()['id'] === $storedWebhook['id'] && strpos( $existingWebhook->getData()['url'], $storedWebhook['url'] ) !== false){
+                $existing = $whClient->getWebhook($storeId, (string) $stored['id']);
+                if (strpos((string) ($existing->getData()['url'] ?? ''), $this->get_webhook_url()) !== false) {
                     return true;
-		}
-            }
-            catch (\Throwable $e) {
-		$errorMessage = __( 'Error fetching existing Webhook. Message: ', 'coinsnap-for-getpaid' ).$e->getMessage();
-            }
-	}
-        try {
-            $storeWebhooks = $whClient->getWebhooks( $storeId );
-            foreach($storeWebhooks as $webhook){
-                if(strpos( $webhook->getData()['url'], $this->get_webhook_url() ) !== false){
-                    $whClient->deleteWebhook( $storeId, $webhook->getData()['id'] );
+                }
+            } catch (\Coinsnap\Exception\RequestException $e) {
+                if (!in_array($e->getCode(), [400, 404], true)) {
+                    throw $e;
                 }
             }
         }
-        catch (\Throwable $e) {
-            $errorMessage = sprintf( 
-                /* translators: 1: StoreId */
-                __( 'Error fetching webhooks for store ID %1$s Message: ', 'coinsnap-for-getpaid' ), $storeId).$e->getMessage();
+        // Remove webhooks of ours whose secret this site does not hold.
+        foreach ($whClient->getWebhooks($storeId) as $webhook) {
+            if (strpos((string) $webhook->getData()['url'], $this->get_webhook_url()) !== false) {
+                try {
+                    $whClient->deleteWebhook($storeId, $webhook->getData()['id']);
+                } catch (\Throwable $e) {
+                    error_log('Coinsnap: a stale webhook could not be deleted');
+                }
+            }
         }
-        
-	return false;
+        return false;
     }
-    
-    public function registerWebhook(string $apiUrl, $apiKey, $storeId){
+
+    public function registerWebhook(string $apiUrl, $apiKey, $storeId): bool {
         try {
-            $whClient = new Webhook( $apiUrl, $apiKey );
+            $whClient = new Webhook($apiUrl, $apiKey);
             $webhook_events = ($this->get_payment_provider() === 'btcpay')? self::BTCPAY_WEBHOOK_EVENTS : self::COINSNAP_WEBHOOK_EVENTS;
-            $webhook = $whClient->createWebhook(
-                $storeId,   //$storeId
-		$this->get_webhook_url(), //$url
-		$webhook_events,   //$specificEvents
-		null    //$secret
-            );
-
-            update_option(
-                'wpinv_settings_coinsnap_webhook',
-                [
-                    'id' => $webhook->getData()['id'],
-                    'secret' => $webhook->getData()['secret'],
-                    'url' => $webhook->getData()['url']
-                ]
-            );
-
-            return $webhook;
-                        
-	}
+            $webhook = $whClient->createWebhook($storeId, $this->get_webhook_url(), $webhook_events, null)->getData();
+        }
         catch (\Throwable $e) {
-            $errorMessage = __('Error creating a new webhook on Coinsnap instance: ', 'coinsnap-for-getpaid' ) . $e->getMessage();
-            throw new PaymentGatewayException(esc_html($errorMessage));
-	}
+            error_log(sprintf('Coinsnap: the webhook could not be registered (status %d)', (int) $e->getCode()));
+            return false;
+        }
+        if (empty($webhook['id']) || empty($webhook['secret'])) {
+            return false;
+        }
+        update_option('wpinv_settings_coinsnap_webhook', ['id' => $webhook['id'], 'secret' => $webhook['secret'], 'url' => $webhook['url'] ?? $this->get_webhook_url()], false);
+        return true;
+    }
 
-	return null;
+    // The stored key is never printed; an empty field keeps it.
+    public function renderApiKeyField($args) {
+        $id = ($args['id'] ?? '') === 'btcpay_api_key' ? 'btcpay_api_key' : 'coinsnap_api_key';
+        $stored = (string) wpinv_get_option($id, '');
+        $hint = ($stored !== '') ? sprintf(
+            /* translators: 1: last characters of the stored API key */
+            __('A key ending in %1$s is saved. Leave empty to keep it.', 'coinsnap-for-getpaid'),
+            substr($stored, -4)
+        ) : ($args['desc'] ?? '');
+        printf(
+            '<input type="password" class="regular-text %1$s" id="wpinv_settings[%2$s]" name="wpinv_settings[%2$s]" value="" autocomplete="new-password"/><p class="description">%3$s</p>',
+            esc_attr($id === 'btcpay_api_key' ? 'btcpay' : 'coinsnap'),
+            esc_attr($id),
+            esc_html($hint)
+        );
+    }
+
+    public function keepStoredApiKeys($input) {
+        if (!is_array($input)) {
+            return $input;
+        }
+        if (array_key_exists('coinsnap_api_key', $input) && trim((string) $input['coinsnap_api_key']) === '') {
+            $input['coinsnap_api_key'] = (string) wpinv_get_option('coinsnap_api_key', '');
+        }
+        if (array_key_exists('btcpay_api_key', $input) && trim((string) $input['btcpay_api_key']) === '') {
+            // A key is never sent to a server it was not created on.
+            $urlUnchanged = trim((string) ($input['btcpay_server_url'] ?? '')) === (string) wpinv_get_option('btcpay_server_url', '');
+            $input['btcpay_api_key'] = $urlUnchanged ? (string) wpinv_get_option('btcpay_api_key', '') : '';
+        }
+        // A pasted BTCPay key is kept only if BTCPay says it is limited to the configured store.
+        if (isset($_POST['option_page']) && $_POST['option_page'] === 'wpinv_settings' // the settings form, not a wpinv_update_option() call
+            && array_key_exists('btcpay_api_key', $input) && ($input['coinsnap_provider'] ?? wpinv_get_option('coinsnap_provider')) === 'btcpay') {
+            $url = trim((string) ($input['btcpay_server_url'] ?? wpinv_get_option('btcpay_server_url', '')));
+            $key = trim((string) $input['btcpay_api_key']);
+            $storeId = trim((string) ($input['btcpay_store_id'] ?? wpinv_get_option('btcpay_store_id', '')));
+            $changed = $key !== (string) wpinv_get_option('btcpay_api_key', '')
+                || $url !== (string) wpinv_get_option('btcpay_server_url', '')
+                || $storeId !== (string) wpinv_get_option('btcpay_store_id', '');
+            if ($key !== '' && $changed && \CoinsnapGP\BtcpayKey::verify($url, $key, $storeId) === null) {
+                $input['btcpay_api_key'] = '';
+                (new \Coinsnap\Util\Notice())->addNotice('error', __('The BTCPay API key was not saved: it must be limited to this store, with only the permissions this plugin needs.', 'coinsnap-for-getpaid'));
+            }
+        }
+        return $input;
     }
 }
 
