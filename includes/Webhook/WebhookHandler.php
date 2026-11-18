@@ -102,7 +102,9 @@ class WebhookHandler
             return 503;
         }
         try {
-            // Read again under the lock so a parallel webhook's change is seen.
+            // Read again under the lock so a parallel webhook's change is seen. The invoice was already
+            // loaded above, so WordPress' object cache would return that copy: drop it first.
+            $this->forgetCached($paymentId);
             $current = (string) ($this->payment($paymentId)['status'] ?? '');
             $this->apply($decision, $paymentId, $current, $invoiceId);
         } finally {
@@ -169,6 +171,13 @@ class WebhookHandler
             'currency' => (string) $invoice->get_currency(),
             'invoices' => get_post_meta($paymentId, '_coinsnap_invoices', true),
         ];
+    }
+
+    protected function forgetCached(int $paymentId): void
+    {
+        clean_post_cache($paymentId);
+        wp_cache_delete($paymentId, 'getpaid_invoice_special_fields');
+        wp_cache_delete($paymentId, 'getpaid_invoice_cart_details');
     }
 
     protected function markPaid(int $paymentId, string $invoiceId): void
