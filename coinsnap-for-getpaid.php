@@ -42,6 +42,7 @@ require_once(dirname(__FILE__) . "/library/loader.php");
 require_once(dirname(__FILE__) . "/includes/Webhook/Signature.php");
 require_once(dirname(__FILE__) . "/includes/Webhook/InvoiceDecision.php");
 require_once(dirname(__FILE__) . "/includes/Webhook/WebhookHandler.php");
+require_once(dirname(__FILE__) . "/includes/BtcpayKey.php");
 
 function coinsnapgp_init(){
     require_once(plugin_dir_path(__FILE__) . 'includes/class-coinsnap-getpaid.php');

@@ -11,11 +11,16 @@ class WebhookHandler
     private const FINAL = ['publish', 'wpi-renewal', 'wpi-refunded'];
     private const OPEN = ['wpi-pending', 'wpi-processing', 'wpi-onhold', 'draft'];
 
-    public function __construct(
-        private string $provider,
-        private string $secret,
-        private array $statuses
-    ) {
+    private $provider;
+    private $secret;
+    private $statuses;
+
+    // Plain properties, not constructor promotion: the plugin still supports PHP 7.4.
+    public function __construct(string $provider, string $secret, array $statuses)
+    {
+        $this->provider = $provider;
+        $this->secret = $secret;
+        $this->statuses = $statuses;
     }
 
     public function handle(string $rawBody, string $signatureHeader, int $nowSeconds): int
