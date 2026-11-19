@@ -489,13 +489,8 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
             $buyerEmail = $invoice->get_email();
             $buyerName = $invoice->get_first_name() . ' ' . $invoice->get_last_name();
 
-            $metadata = [];
-            $metadata['orderNumber'] = $invoice->get_number();
-            $metadata['customerName'] = $buyerName;
-            
-            if($this->get_payment_provider() === 'btcpay') {
-                $metadata['orderId'] = $invoice->get_number();
-            }
+            // Invoice data and the buyer's details. The plugin has no setting for customer data, so they are always sent.
+            $metadata = $this->invoiceMetadata($invoice);
             
             if($this->get_payment_provider() === 'btcpay' && $currency !== 'BTC'){
                 $store = new \Coinsnap\Client\Store($this->getApiUrl(), $this->getApiKey());
@@ -590,6 +585,78 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
         return esc_url_raw(add_query_arg(array('getpaid-listener' => 'coinsnap'), home_url('index.php')));
     }
     
+    // Invoice metadata. orderId must stay the GetPaid invoice number: the webhook finds the invoice by it
+    // (Coinsnap: top-level orderId, which the backend also copies to metadata.orderId; BTCPay: metadata.orderId).
+    private function invoiceMetadata($invoice): array {
+        $lineItems = [];
+        $names = [];
+        foreach ((array) $invoice->get_items() as $item) {
+            if (!is_object($item)) {
+                continue;
+            }
+            $quantity = method_exists($item, 'get_quantity') ? (float) $item->get_quantity() : 1.0;
+            $quantity = ($quantity == (int) $quantity) ? (int) $quantity : $quantity;
+            $name = wp_strip_all_tags((string) $item->get_name());
+            $lineItems[] = self::withoutEmptyValues([
+                'name' => $name,
+                'productId' => (int) $item->get_id() > 0 ? (int) $item->get_id() : null,
+                'quantity' => $quantity,
+                'price' => (float) $item->get_price(),
+                'total' => method_exists($item, 'get_sub_total') ? (float) $item->get_sub_total() : null,
+            ]);
+            if ($name !== '') {
+                $names[] = $name . ($quantity > 1 ? ' x ' . $quantity : '');
+            }
+        }
+        $itemDesc = implode(', ', $names);
+        if (function_exists('mb_strlen') && mb_strlen($itemDesc) > 250) {
+            $itemDesc = mb_substr($itemDesc, 0, 247) . '...';
+        }
+        $itemCode = '';
+        if (count($lineItems) === 1) {
+            $itemCode = (string) ($lineItems[0]['productId'] ?? '');
+        }
+
+        $buyerName = trim($invoice->get_first_name() . ' ' . $invoice->get_last_name());
+        $discountCode = (string) $invoice->get_discount_code();
+        $discountTotal = (float) $invoice->get_total_discount();
+        $taxTotal = (float) $invoice->get_total_tax();
+
+        return self::withoutEmptyValues([
+            'orderId' => (string) $invoice->get_number(),
+            'orderNumber' => (string) $invoice->get_number(),
+            'orderUrl' => admin_url('post.php?post=' . (int) $invoice->get_id() . '&action=edit'),
+            'getpaidInvoiceId' => (int) $invoice->get_id(),
+            'customerName' => $buyerName,
+            'buyerName' => $buyerName,
+            'buyerEmail' => (string) $invoice->get_email(),
+            'buyerPhone' => (string) $invoice->get_phone(),
+            'buyerCompany' => (string) $invoice->get_company(),
+            'buyerAddress1' => (string) $invoice->get_address(),
+            'buyerCity' => (string) $invoice->get_city(),
+            'buyerState' => (string) $invoice->get_state(),
+            'buyerZip' => (string) $invoice->get_zip(),
+            'buyerCountry' => (string) $invoice->get_country(),
+            'itemDesc' => $itemDesc,
+            'itemCode' => $itemCode,
+            'lineItems' => $lineItems,
+            'couponCodes' => $discountCode !== '' ? [$discountCode] : [],
+            'discountTotal' => $discountTotal > 0 ? $discountTotal : null,
+            'taxTotal' => $taxTotal > 0 ? $taxTotal : null,
+            'recurring' => $invoice->is_recurring() ? true : null,
+            'platform' => 'getpaid',
+            'pluginVersion' => COINSNAPGP_VERSION,
+            'language' => function_exists('determine_locale') ? determine_locale() : get_locale(),
+        ]);
+    }
+
+    // Drops null, '' and [] so the invoice carries only values that exist.
+    private static function withoutEmptyValues(array $values): array {
+        return array_filter($values, function ($value) {
+            return $value !== null && $value !== '' && $value !== [];
+        });
+    }
+
     private function get_payment_provider() {
         return (wpinv_get_option( 'coinsnap_provider') === 'btcpay')? 'btcpay' : 'coinsnap';
     }
