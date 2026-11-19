@@ -465,13 +465,10 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
 
     public function process_payment($invoice, $submission_data, $submission){
 
-        try {
-            $webhookReady = $this->webhookExists($this->getApiUrl(), $this->getApiKey(), $this->getStoreId())
-                || $this->registerWebhook($this->getApiUrl(), $this->getApiKey(), $this->getStoreId());
-        } catch (\Throwable $e) {
-            $webhookReady = false;
-        }
-        if (!$webhookReady) {
+        // A customer's checkout never lists, deletes or registers webhooks: only the admin connection check
+        // and the BTCPay connect callback do. Without a connected webhook the payment could not be confirmed.
+        if (!$this->webhookConnected()) {
+            wpinv_error_log('Coinsnap: no webhook is connected for this store. Open the Coinsnap gateway settings to connect it.');
             wpinv_set_error( 'Connection error', esc_html__('The payment could not be started. Please try again later.', 'coinsnap-for-getpaid') );
             wpinv_send_back_to_checkout( $invoice );
         }
@@ -716,8 +713,22 @@ class CoinsnapGP_Gateway extends GetPaid_Payment_Gateway {
         if (empty($webhook['id']) || empty($webhook['secret'])) {
             return false;
         }
-        update_option('wpinv_settings_coinsnap_webhook', ['id' => $webhook['id'], 'secret' => $webhook['secret'], 'url' => $webhook['url'] ?? $this->get_webhook_url()], false);
+        update_option('wpinv_settings_coinsnap_webhook', ['id' => $webhook['id'], 'secret' => $webhook['secret'], 'url' => $webhook['url'] ?? $this->get_webhook_url(), 'store' => $this->webhookStoreKey((string) $storeId)], false);
         return true;
+    }
+
+    private function webhookStoreKey(string $storeId): string {
+        return $this->get_payment_provider() . ':' . $storeId;
+    }
+
+    // Local check only (no API call): a webhook secret is stored, for the configured provider and store.
+    // Records written before this check existed have no 'store' entry and are accepted.
+    public function webhookConnected(): bool {
+        $stored = get_option('wpinv_settings_coinsnap_webhook');
+        if (!is_array($stored) || empty($stored['id']) || empty($stored['secret'])) {
+            return false;
+        }
+        return !isset($stored['store']) || $stored['store'] === $this->webhookStoreKey((string) $this->getStoreId());
     }
 
     // The stored key is never printed; an empty field keeps it.
